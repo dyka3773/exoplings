@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Data Visualization - NASA SpaceApps 2025{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">📊 Interactive Data Visualization</h3>
+                <p class="mb-0 mt-1">{{ data_info.filename }}</p>
+            </div>
+            <div class="card-body">
+                <div id="plotly-chart"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📋 Data Summary</h5>
+            </div>
+            <div class="card-body">                
+                <div class="mb-3">
+                    <h6>Is it an exoplanet?</h6>
+                    <p>
+                        {% if exoplanet_result is defined and exoplanet_result %}
+                            {% if exoplanet_result.is_exoplanet %}
+                                <span class="fw-bold text-success">✅ This light curve is likely from an exoplanet candidate.</span><br>
+                                Estimated certainty: <span class="fw-bold">{{ exoplanet_result.certainty|round(1) }}%</span>
+                            {% else %}
+                                <span class="fw-bold text-danger">❌ This light curve does not appear to be from an exoplanet.</span><br>
+                                Estimated certainty: <span class="fw-bold">{{ exoplanet_result.certainty|round(1) }}%</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">Exoplanet classification information is not available for this dataset.</span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                        📁 Upload New File
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">🎛️ Visualization Controls</h6>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">
+                    <strong>Interaction Tips:</strong><br>
+                    • Click and drag to zoom<br>
+                    • Double-click to reset zoom<br>
+                    • Hover for detailed information<br>
+                    • Use toolbar for more options
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Plotly.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/3.1.0/plotly.min.js"></script>
+
+<script>
+// Render the Plotly chart
+document.addEventListener('DOMContentLoaded', function() {
+    const plotData = {{ plot_json|safe }};
+    
+    // Configuration for the plot
+    const config = {
+        responsive: true,
+        displayModeBar: true,
+        modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+        displaylogo: false,
+        toImageButtonOptions: {
+            format: 'png',
+            filename: 'nasa_spaceapps_visualization',
+            height: 600,
+            width: 800,
+            scale: 2
+        }
+    };
+    
+    // Layout updates
+    const layout = {
+        ...plotData.layout,
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: {
+            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            size: 12
+        }
+    };
+    
+    // Render the plot
+    Plotly.newPlot('plotly-chart', plotData.data, layout, config);
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        Plotly.Plots.resize('plotly-chart');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+[project]
+name = "spaceapps-2025"
+version = "0.0.1"
+description = "NASA SpaceApps 2025 - Interactive Data Visualization Web App"
+readme = "README.md"
+authors = [
+    { name = "Hercules Konsoulas", email = "dyka3773@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "flask>=3.1.2",
+    "pandas>=2.3.2",
+    "plotly>=6.3.0",
+    "numpy>=2.3.2"
+]
+
+[project.scripts]
+spaceapps-2025 = "spaceapps_2025.app:main"
+

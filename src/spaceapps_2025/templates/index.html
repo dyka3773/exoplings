@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Data - NASA SpaceApps 2025{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header text-center">
+                <h2 class="mb-0">🌌 NASA Data Visualization Tool</h2>
+                <p class="mb-0 mt-2">Upload your data file to create interactive visualizations</p>
+            </div>
+            <div class="card-body p-5">
+                <form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="file" class="form-label h5">Select Data File</label>
+                        <input type="file" 
+                               class="form-control form-control-lg" 
+                               id="file" 
+                               name="file" 
+                               accept=".csv,.xlsx,.xls,.json"
+                               required>
+                        <div class="form-text mt-2">
+                            <strong>Supported formats:</strong> CSV, Excel (.xlsx, .xls), JSON<br>
+                            <strong>Maximum file size:</strong> 16 MB
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            📊 Upload and Visualize
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-5">
+                
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3">
+                            <h5>📁 Step 1</h5>
+                            <p class="text-muted">Upload your CSV, Excel, or JSON data file</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3">
+                            <h5>🔄 Step 2</h5>
+                            <p class="text-muted">Automatic data processing and analysis</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3">
+                            <h5>📈 Step 3</h5>
+                            <p class="text-muted">Interactive visualization and exploration</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">💡 Tips for Better Visualizations</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">✅ Ensure your data has clear column headers</li>
+                    <li class="mb-2">✅ Include both numerical and categorical data for richer plots</li>
+                    <li class="mb-2">✅ Clean your data beforehand for best results</li>
+                    <li class="mb-2">✅ Smaller files (< 1MB) will load faster</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add file validation and preview
+document.getElementById('file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
+        const fileName = file.name;
+        const fileExt = fileName.split('.').pop().toLowerCase();
+        
+        // Update form text with file info
+        const formText = e.target.parentNode.querySelector('.form-text');
+        formText.innerHTML = `
+            <strong>Selected file:</strong> ${fileName}<br>
+            <strong>Size:</strong> ${fileSize} MB<br>
+            <strong>Type:</strong> ${fileExt.toUpperCase()}<br>
+            <small class="text-muted">Supported formats: CSV, Excel (.xlsx, .xls), JSON | Maximum: 16 MB</small>
+        `;
+        
+        // Validate file size
+        if (file.size > 16 * 1024 * 1024) {
+            formText.innerHTML += '<br><span class="text-danger">⚠️ File too large! Please select a file smaller than 16 MB.</span>';
+            e.target.value = '';
+        }
+    }
+});
+</script>
+{% endblock %}
