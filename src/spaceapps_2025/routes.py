@@ -50,9 +50,7 @@ def create_interactive_plot(df):
                 df,
                 x="observation_date",
                 y="brightness",
-                error_y="brightness_error"
-                if "brightness_error" in df.columns
-                else None,
+                error_y="brightness_error" if "brightness_error" in df.columns else None,
                 color="object_id",
                 title="Light Curve",
                 labels={
@@ -65,9 +63,7 @@ def create_interactive_plot(df):
             return fig
     except Exception as e:
         fig = go.Figure()
-        fig.add_annotation(
-            text=f"Error creating plot: {str(e)}", x=0.5, y=0.5, showarrow=False
-        )
+        fig.add_annotation(text=f"Error creating plot: {str(e)}", x=0.5, y=0.5, showarrow=False)
         return fig
 
 
@@ -82,11 +78,7 @@ def register_routes(app):
 
     @app.route("/upload", methods=["POST"])
     def upload_file():
-        if (
-            "file" not in request.files
-            or request.files["file"] is None
-            or request.files["file"] == ""
-        ):
+        if "file" not in request.files or request.files["file"] is None or request.files["file"] == "":
             flash("No file selected")
             return redirect(request.url)
         file = request.files["file"]
@@ -96,9 +88,7 @@ def register_routes(app):
             file.save(filepath)
             try:
                 df = load_data(filepath)
-                flash(
-                    f"File uploaded successfully! Found {len(df)} rows and {len(df.columns)} columns."
-                )
+                flash(f"File uploaded successfully! Found {len(df)} rows and {len(df.columns)} columns.")
                 return redirect(url_for("visualize", filename=filename))
             except Exception as e:
                 flash(f"Error processing file: {str(e)}")
@@ -125,9 +115,7 @@ def register_routes(app):
                 "missing_values": df.isnull().sum().to_dict(),
             }
             exoplanet_result = None
-            if set(["object_id", "observation_date", "brightness"]).issubset(
-                df.columns
-            ):
+            if set(["object_id", "observation_date", "brightness"]).issubset(df.columns):
                 is_exoplanet, certainty = detect_exoplanet(df)
                 exoplanet_result = {
                     "is_exoplanet": is_exoplanet,
