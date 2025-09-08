@@ -44,8 +44,8 @@ upload_to_pypi = false
 upload_to_release = true
 remove_dist = false
 
-[tool.semantic_release.branches.master]
-match = "master"
+[tool.semantic_release.branches.main]
+match = "main"
 prerelease = false
 
 [tool.semantic_release.commit_parser_options]

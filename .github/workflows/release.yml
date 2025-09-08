@@ -2,7 +2,7 @@ name: Release Without publishing to PyPI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
