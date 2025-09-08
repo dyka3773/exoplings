@@ -209,3 +209,10 @@ __marimo__/
 
 # App uploads
 .uploads
+
+# Dev hidden folders
+.vscode/
+.idea/
+.DS_Store
+
+.notebooks/
