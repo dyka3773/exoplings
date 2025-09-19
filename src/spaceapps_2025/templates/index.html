@@ -69,6 +69,30 @@
                 </ul>
             </div>
         </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="mb-0">🕑 Recently Uploaded Files</h5>
+                {% if most_recent_curves and most_recent_curves|length > 0 %}
+                    <div class="row g-3 mt-3">
+                    {% for curve in most_recent_curves[:10] %}
+                        <div class="col-md-6">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-body py-3 d-flex align-items-center">
+                                    <span class="me-2" style="font-size:1.5rem;">📄</span>
+                                    <a href="{{ url_for('visualize', filename=curve) }}" class="fw-bold text-primary text-decoration-none">
+                                        {{ curve }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No recent files available.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 
