@@ -7,11 +7,20 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-header">
-                <h3 class="mb-0">📊 Interactive Data Visualization</h3>
+                <h3 class="mb-0">📊 Light Curve Visualization</h3>
                 <p class="mb-0 mt-1">{{ data_info.filename }}</p>
             </div>
             <div class="card-body">
                 <div id="plotly-chart"></div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3 class="mb-0">📊 Prediction Plot</h3>
+            </div>
+            <div class="card-body">
+                <div id="plotly-posterior-chart"></div>
             </div>
         </div>
     </div>
@@ -61,6 +70,27 @@
                 </p>
             </div>
         </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+            <h6 class="mb-0">🕑 Recently Uploaded Files</h6>
+            </div>
+            <div class="card-body">
+            {% if most_recent_curves and most_recent_curves|length > 0 %}
+                <ul class="list-group list-group-flush">
+                {% for curve in most_recent_curves[:10] %}
+                    <li class="list-group-item">
+                        <a href="{{ url_for('visualize', filename=curve) }}">
+                            {{ curve }}
+                        </a>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">No recent files available.</p>
+            {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -72,17 +102,18 @@
 <script>
 // Render the Plotly chart
 document.addEventListener('DOMContentLoaded', function() {
-    const plotData = {{ plot_json|safe }};
+    const light_curve_plot_data = {{ light_curve_plot_json|safe }};
+    const posterior_plot_data = {{ posterior_plot_json|safe }};
     
     // Configuration for the plot
-    const config = {
+    const light_curve_configs = {
         responsive: true,
         displayModeBar: true,
         modeBarButtonsToRemove: ['lasso2d', 'select2d'],
         displaylogo: false,
         toImageButtonOptions: {
             format: 'png',
-            filename: 'nasa_spaceapps_visualization',
+            filename: '{{ data_info.filename }}_plot',
             height: 600,
             width: 800,
             scale: 2
@@ -90,8 +121,8 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     // Layout updates
-    const layout = {
-        ...plotData.layout,
+    const light_curve_layout = {
+        ...light_curve_plot_data.layout,
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
         font: {
@@ -101,11 +132,20 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     // Render the plot
-    Plotly.newPlot('plotly-chart', plotData.data, layout, config);
+    Plotly.newPlot('plotly-chart', light_curve_plot_data.data, light_curve_layout, light_curve_configs);
     
     // Handle window resize
     window.addEventListener('resize', function() {
         Plotly.Plots.resize('plotly-chart');
+    });
+
+
+    // TODO: Change the layout and config for the posterior plot if needed
+    Plotly.newPlot('plotly-posterior-chart', posterior_plot_data.data, light_curve_layout, light_curve_configs);
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        Plotly.Plots.resize('plotly-posterior-chart');
     });
 });
 </script>
