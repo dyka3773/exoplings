@@ -1,5 +1,5 @@
 [project]
-name = "spaceapps-2025"
+name = "exoplings"
 version = "1.2.0"
 description = "NASA SpaceApps 2025 - Interactive Data Visualization Web App"
 readme = "README.md"
@@ -21,10 +21,10 @@ dependencies = [
 ]
 
 [project.urls]
-source = "https://github.com/dyka3773/spaceapps-2025"
+source = "https://github.com/dyka3773/exoplings"
 
 [project.scripts]
-spaceapps-2025 = "spaceapps_2025.app:main"
+exoplings = "exoplings.app:main"
 
 [dependency-groups]
 dev = [
