@@ -11,7 +11,7 @@ app = Flask(
     template_folder=os.path.join(current_dir, "templates"),
     static_folder=os.path.join(current_dir, "static"),
 )
-app.secret_key = "your-secret-key-change-this-in-production"
+app.secret_key = os.environ.get("SECRET_KEY", "your-secret-key-change-this-in-production")
 
 # Configuration
 UPLOAD_FOLDER = ".uploads"
@@ -27,7 +27,9 @@ register_routes(app)
 
 def main():
     """Main entry point for the application."""
-    app.run(debug=True, host="127.0.0.1", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("FLASK_ENV") != "production"
+    app.run(debug=debug, host="0.0.0.0", port=port)
 
 
 if __name__ == "__main__":
