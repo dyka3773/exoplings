@@ -9,10 +9,14 @@ from flask import flash, redirect, render_template, request, url_for
 from plotly.graph_objs._figure import Figure
 from werkzeug.utils import secure_filename
 
-from .app import network, trainer
+from .app import (
+    multi_d_network as network_multi,
+    one_d_network as network,
+    trainer,
+)
 from .data_processing import load_data
 from .PlanetDetailExtractor import PlanetDetailExtractor
-from .plot_processing import create_posterior_1D_plot, create_posterior_lc_plot, create_simple_lc_plot
+from .plot_processing import create_posterior_1D_plot, create_posterior_lc_plot, create_simple_lc_plot, plot_smart_multiD_infer
 from .utils import allowed_file, get_most_recent_curves
 
 
@@ -128,15 +132,21 @@ def register_routes(app):
             posterior_fig, credible_intervals, mode, certainty, is_exoplanet = create_posterior_1D_plot(z_true, predictions)
             posterior_lc_fig = create_posterior_lc_plot(z_true, real_test, credible_intervals, mode)
 
+            # TODO: re-enable when model is ready
+            posterior_corner_fig = create_posterior_lc_plot(z_true, real_test, credible_intervals, mode)
+            # posterior_corner_fig = plot_smart_multiD_infer(network_multi, trainer)
+
             light_curve_plot_json = json.dumps(light_curve_fig, cls=plotly.utils.PlotlyJSONEncoder)
             posterior_plot_json = json.dumps(posterior_fig, cls=plotly.utils.PlotlyJSONEncoder)
             posterior_lc_plot_json = json.dumps(posterior_lc_fig, cls=plotly.utils.PlotlyJSONEncoder)
+            posterior_corner_plot_json = json.dumps(posterior_corner_fig, cls=plotly.utils.PlotlyJSONEncoder)
 
             return render_template(
                 "visualize.html",
                 light_curve_plot_json=light_curve_plot_json,
                 posterior_plot_json=posterior_plot_json,
                 posterior_lc_plot_json=posterior_lc_plot_json,
+                corner_plot_json=posterior_corner_plot_json,
                 data_info=data_info,
                 exoplanet_result={"is_exoplanet": is_exoplanet, "certainty": certainty},
                 most_recent_curves=get_most_recent_curves(app.config["UPLOAD_FOLDER"], limit=10),

@@ -4,7 +4,8 @@ import torch
 from flask import Flask
 from swyft import SwyftTrainer
 
-from .models.network import Network
+from .models.networks.MultiDim import ExoplingInferrerUltra
+from .models.networks.OneDim import ExoplingDetector
 from .models.simulator import Simulator
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -27,8 +28,24 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # globals needed
 DEVICE = "gpu" if torch.cuda.is_available() else "cpu"
-network = Network()
-network.load_state_dict(torch.load(os.path.join(current_dir, "ai_models", "CNN_1D.pth"), weights_only=True))
+
+one_d_network = ExoplingDetector()
+one_d_network.load_state_dict(
+    torch.load(
+        os.path.join(current_dir, "ai_models", "CNN_1D.pth"),
+        weights_only=True,
+    )
+)
+
+multi_d_network = ExoplingInferrerUltra()
+
+# TODO: re-enable when model is ready
+# multi_d_network.load_state_dict(
+#     torch.load(
+#         os.path.join(current_dir, "ai_models", "Inferrer_Ultra.pth"),
+#         weights_only=True,
+#     )
+# )
 
 simulator = Simulator(rand_inc=True, rand_t0=True, rand_per=True, t_len=250)
 trainer = SwyftTrainer(accelerator=DEVICE)

@@ -36,6 +36,15 @@
                 </div>
             </div>
         </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3 class="mb-0">📊 Multi Dimensional Inference</h3>
+            </div>
+            <div class="card-body">
+                <div id="plotly-corner-chart"></div>
+            </div>
+        </div>
     </div>
     
     <div class="col-lg-4">
@@ -126,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const light_curve_plot_data = {{ light_curve_plot_json|safe }};
     const posterior_plot_data = {{ posterior_plot_json|safe }};
     const posterior_lc_plot_data = {{ posterior_lc_plot_json|safe }};
+    const corner_plot_data = {{ corner_plot_json|safe }};
     
     // Configuration for the plot
     const light_curve_configs = {
@@ -169,6 +179,20 @@ document.addEventListener('DOMContentLoaded', function() {
             scale: 2
         }
     };
+
+    const corner_configs = {
+        responsive: true,
+        displayModeBar: true,
+        modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+        displaylogo: false,
+        toImageButtonOptions: {
+            format: 'png',
+            filename: '{{ data_info.filename }}_plot',
+            height: 600,
+            width: 800,
+            scale: 2
+        }
+    };
     
     // Layout updates
     const light_curve_layout = {
@@ -200,17 +224,29 @@ document.addEventListener('DOMContentLoaded', function() {
             size: 12
         }
     };
+
+    const corner_layout = {
+        ...corner_plot_data.layout,
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: {
+            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            size: 12
+        }
+    };
     
     // Render the plot
     Plotly.newPlot('plotly-chart', light_curve_plot_data.data, light_curve_layout, light_curve_configs);
     Plotly.newPlot('plotly-posterior-chart', posterior_plot_data.data, posterior_layout, posterior_configs);
     Plotly.newPlot('plotly-posterior-lc-chart', posterior_lc_plot_data.data, posterior_lc_layout, posterior_lc_configs);
+    Plotly.newPlot('plotly-corner-chart', corner_plot_data.data, corner_layout, corner_configs);
 
     // Handle window resize
     window.addEventListener('resize', function() {
         Plotly.Plots.resize('plotly-posterior-chart');
         Plotly.Plots.resize('plotly-posterior-lc-chart');
         Plotly.Plots.resize('plotly-chart');
+        Plotly.Plots.resize('plotly-corner-chart');
     });
 });
 </script>

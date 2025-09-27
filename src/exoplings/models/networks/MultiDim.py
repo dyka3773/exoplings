@@ -13,11 +13,11 @@ class SpatialDropout1D(nn.Dropout2d):
         return x.squeeze(2)
 
 
-class Network(swyft.SwyftModule):
-    def __init__(self, input_length=250, dropout_rate=0.1):
+class ExoplingInferrerUltra(swyft.SwyftModule):
+    def __init__(self, input_length=250, dropout_rate=0.1, feature_dim=250):
         super().__init__()
 
-        # --- Convolutional blocks (similar to Olmschenk et al.) ---
+        # --- Convolutional blocks (Olmschenk-inspired) ---
         conv_blocks = []
         in_channels = 1
         channels = [16, 32, 64]
@@ -29,7 +29,7 @@ class Network(swyft.SwyftModule):
                 block.append(SpatialDropout1D(dropout_rate))
             else:  # last conv before dense: standard dropout
                 block.append(nn.Dropout(dropout_rate))
-            if i < 2:  # first two conv blocks use pooling (like paper's first 6 convs)
+            if i < 2:  # first two conv blocks use pooling
                 block.append(nn.MaxPool1d(2))
             if i not in [0, len(channels) - 1]:  # no BN on first or last conv block
                 block.append(nn.BatchNorm1d(out_channels))
@@ -44,18 +44,28 @@ class Network(swyft.SwyftModule):
             out = self.conv_layers(dummy)
         flatten_size = out.shape[1] * out.shape[2]
 
-        # --- Dense blocks ---
-        self.fc1 = nn.Linear(flatten_size, 512)  # first dense block, no dropout/BN
+        # --- Dense projection to feature_dim (default 250) ---
+        self.fc1 = nn.Linear(flatten_size, 512)
         self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, 64)
-        self.fc4 = nn.Linear(64, 16)
+        self.fc3 = nn.Linear(256, feature_dim)
 
         self.dropout = nn.Dropout(dropout_rate)
         self.bn2 = nn.BatchNorm1d(256)
-        self.bn3 = nn.BatchNorm1d(64)
 
-        # --- Log-ratio estimator ---
-        self.logratios = swyft.LogRatioEstimator_1dim(num_features=16, num_params=1, varnames="z")
+        # --- Log-ratio estimators ---
+        marginals = ((0, 1, 2, 3),)
+        self.logratios1 = swyft.LogRatioEstimator_1dim(
+            num_features=feature_dim,
+            num_params=4,
+            varnames="z",
+            num_blocks=4,
+        )
+        self.logratios2 = swyft.LogRatioEstimator_Ndim(
+            num_features=feature_dim,
+            marginals=marginals,
+            varnames="z",
+            num_blocks=4,
+        )
 
     def forward(self, A, B):
         x = A["x"]  # (batch, 250)
@@ -65,17 +75,14 @@ class Network(swyft.SwyftModule):
         features = self.conv_layers(x)
         features = features.view(features.size(0), -1)
 
-        # dense pipeline
+        # dense projection
         x = F.leaky_relu(self.fc1(features))
         x = F.leaky_relu(self.fc2(x))
         x = self.dropout(x)
         x = self.bn2(x)
-        x = F.leaky_relu(self.fc3(x))
-        x = self.dropout(x)
-        x = self.bn3(x)
-        embedding = F.leaky_relu(self.fc4(x))
+        embedding = F.leaky_relu(self.fc3(x))  # (batch, feature_dim)
 
-        # log-ratio
-        logratios = self.logratios(embedding, B["z"].unsqueeze(-1))
-        return logratios
-        return logratios
+        # log-ratio estimators
+        logratios1 = self.logratios1(embedding, B["z"])
+        logratios2 = self.logratios2(embedding, B["z"])
+        return logratios1, logratios2
