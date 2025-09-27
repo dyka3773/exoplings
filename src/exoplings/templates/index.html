@@ -18,10 +18,10 @@
                                class="form-control form-control-lg" 
                                id="file" 
                                name="file" 
-                               accept=".csv,.xlsx,.xls,.json"
+                               accept=".csv"
                                required>
                         <div class="form-text mt-2">
-                            <strong>Supported formats:</strong> CSV, Excel (.xlsx, .xls), JSON<br>
+                            <strong>Supported formats:</strong> CSV (.csv)<br>
                             <strong>Maximum file size:</strong> 16 MB
                         </div>
                     </div>
@@ -39,7 +39,7 @@
                     <div class="col-md-4 mb-3">
                         <div class="p-3">
                             <h5>📁 Step 1</h5>
-                            <p class="text-muted">Upload your CSV, Excel, or JSON data file</p>
+                            <p class="text-muted">Upload your CSV data file</p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
@@ -111,7 +111,7 @@ document.getElementById('file').addEventListener('change', function(e) {
             <strong>Selected file:</strong> ${fileName}<br>
             <strong>Size:</strong> ${fileSize} MB<br>
             <strong>Type:</strong> ${fileExt.toUpperCase()}<br>
-            <small class="text-muted">Supported formats: CSV, Excel (.xlsx, .xls), JSON | Maximum: 16 MB</small>
+            <small class="text-muted">Supported formats: CSV (.csv) | Maximum: 16 MB</small>
         `;
         
         // Validate file size
