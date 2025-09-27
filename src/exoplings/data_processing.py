@@ -12,10 +12,6 @@ def load_data(filepath) -> pd.DataFrame:
         file_ext = filepath.rsplit(".", 1)[1].lower()
         if file_ext == "csv":
             df = pd.read_csv(filepath)
-        elif file_ext in ["xlsx", "xls"]:
-            df = pd.read_excel(filepath)
-        elif file_ext == "json":
-            df = pd.read_json(filepath)
         else:
             raise ValueError(f"Unsupported file format: {file_ext}")
         return df

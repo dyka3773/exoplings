@@ -65,7 +65,7 @@ def register_routes(app):
                 os.remove(filepath)
                 return redirect(request.url)
         else:
-            flash("Invalid file type. Please upload a CSV, Excel, or JSON file.")
+            flash("Invalid file type. Please upload a CSV file.")
             return redirect(request.url)
 
     @app.route("/visualize/<filename>")
