@@ -1,6 +1,6 @@
 [project]
 name = "exoplings"
-version = "1.1.0"
+version = "1.2.0"
 description = "NASA SpaceApps 2025 - Interactive Data Visualization Web App"
 readme = "README.md"
 authors = [
