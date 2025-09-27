@@ -77,15 +77,20 @@
             </div>
             <div class="card-body">
             {% if most_recent_curves and most_recent_curves|length > 0 %}
-                <ul class="list-group list-group-flush">
-                {% for curve in most_recent_curves[:10] %}
-                    <li class="list-group-item">
-                        <a href="{{ url_for('visualize', filename=curve) }}">
-                            {{ curve }}
-                        </a>
-                    </li>
-                {% endfor %}
-                </ul>
+                <div class="row g-3">
+                    {% for curve in most_recent_curves[:10] %}
+                        <div class="col-12">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-body py-3 d-flex align-items-center">
+                                    <span class="me-2" style="font-size:1rem;">📄</span>
+                                    <a href="{{ url_for('visualize', filename=curve) }}" class="fw-bold text-primary text-decoration-none">
+                                        {{ curve }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
             {% else %}
                 <p class="text-muted mb-0">No recent files available.</p>
             {% endif %}
@@ -119,10 +124,34 @@ document.addEventListener('DOMContentLoaded', function() {
             scale: 2
         }
     };
+
+    const posterior_configs = {
+        responsive: true,
+        displayModeBar: true,
+        modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+        displaylogo: false,
+        toImageButtonOptions: {
+            format: 'png',
+            filename: '{{ data_info.filename }}_plot',
+            height: 600,
+            width: 800,
+            scale: 2
+        }
+    };
     
     // Layout updates
     const light_curve_layout = {
         ...light_curve_plot_data.layout,
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: {
+            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            size: 12
+        }
+    };
+
+    const posterior_layout = {
+        ...posterior_plot_data.layout,
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
         font: {
@@ -141,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // TODO: Change the layout and config for the posterior plot if needed
-    Plotly.newPlot('plotly-posterior-chart', posterior_plot_data.data, light_curve_layout, light_curve_configs);
+    Plotly.newPlot('plotly-posterior-chart', posterior_plot_data.data, posterior_layout, posterior_configs);
 
     // Handle window resize
     window.addEventListener('resize', function() {

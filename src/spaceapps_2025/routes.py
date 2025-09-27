@@ -19,7 +19,10 @@ def register_routes(app):
         Returns:
             Rendered index.html template.
         """
-        return render_template("index.html")
+        return render_template(
+            "index.html",
+            most_recent_curves=get_most_recent_curves(app.config["UPLOAD_FOLDER"], limit=10),
+        )
 
     @app.route("/about")
     def about():
@@ -88,14 +91,17 @@ def register_routes(app):
             }
             results = None
 
-            results = predict_is_exoplanet(df)
+            light_curve_fig = create_interactive_plot(df)  # FIXME: this is a placeholder function, to be changed when we have real data
 
-            fig = create_interactive_plot(df)
-            light_curve_plot_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+            posterior_fig, results = predict_is_exoplanet(df)
+
+            light_curve_plot_json = json.dumps(light_curve_fig, cls=plotly.utils.PlotlyJSONEncoder)
+            posterior_plot_json = json.dumps(posterior_fig, cls=plotly.utils.PlotlyJSONEncoder)
+
             return render_template(
                 "visualize.html",
                 light_curve_plot_json=light_curve_plot_json,
-                posterior_plot_json=light_curve_plot_json,  # TODO: Replace with actual posterior plot when available
+                posterior_plot_json=posterior_plot_json,
                 data_info=data_info,
                 exoplanet_result=results,
                 most_recent_curves=get_most_recent_curves(app.config["UPLOAD_FOLDER"], limit=10),

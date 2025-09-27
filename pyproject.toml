@@ -15,6 +15,7 @@ dependencies = [
     "flask>=3.1.2",
     "pandas>=2.1.0",
     "plotly>=6.3.0",
+    "python-dotenv>=1.1.1",
     "scipy==1.9.3",
     "swyft>=0.4.5",
 ]

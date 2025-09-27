@@ -12,24 +12,35 @@ def create_interactive_plot(df: pd.DataFrame) -> go.Figure:
     Returns:
         go.Figure: Plotly figure object.
     """
+    # Support WASP-18_TESS format: columns 'time_btjd', 'flux'
     try:
-        if set(["object_id", "observation_date", "brightness"]).issubset(df.columns):
-            fig = px.scatter(
-                df,
-                x="observation_date",
-                y="brightness",
-                error_y="brightness_error" if "brightness_error" in df.columns else None,
-                color="object_id",
-                title="Light Curve",
-                labels={
-                    "observation_date": "Observation Date",
-                    "brightness": "Brightness",
-                },
-            )
-            fig.update_traces(mode="lines+markers")
-            fig.update_layout(height=600, showlegend=True, hovermode="closest")
-            return fig
+        fig: go.Figure = px.scatter(
+            df,
+            x="time_btjd",
+            y="flux",
+            title="Light Curve",
+            labels={
+                "time_btjd": "Time (BTJD)",
+                "flux": "Flux",
+            },
+        )
+        fig.update_traces(mode="lines+markers")
+        fig.update_layout(height=600, showlegend=True, hovermode="closest")
+        return fig
     except Exception as e:
         fig = go.Figure()
         fig.add_annotation(text=f"Error creating plot: {str(e)}", x=0.5, y=0.5, showarrow=False)
         return fig
+
+
+def create_posterior_plot(df: pd.DataFrame) -> go.Figure:
+    """Create the posterior plot for exoplanet prediction.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing light curve data.
+
+    Returns:
+        go.Figure: Plotly figure object for posterior plot.
+    """
+    # TODO: Implement actual posterior plot creation logic
+    return go.Figure()
