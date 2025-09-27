@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v1.4.0](https://github.com/dyka3773/exoplings/releases/tag/v1.4.0) - 2025-09-27
+
+<small>[Compare with v1.3.0](https://github.com/dyka3773/exoplings/compare/v1.3.0...v1.4.0)</small>
+
+### Features
+
+- add inference back & front end plots and calculation ([a39cd16](https://github.com/dyka3773/exoplings/commit/a39cd16db94e84355966f82487e123f957d752e6) by Hercules Konsoulas).
+- remove support for all file formats except for csv ([b256f70](https://github.com/dyka3773/exoplings/commit/b256f709b6048da112b47e84e56175a3497e684d) by Hercules Konsoulas).
+
 ## [v1.3.0](https://github.com/dyka3773/exoplings/releases/tag/v1.3.0) - 2025-09-27
 
 <small>[Compare with v1.2.0](https://github.com/dyka3773/exoplings/compare/v1.2.0...v1.3.0)</small>
@@ -38,3 +47,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Features
 
 - move routing in a separate module and add an "about us" page ([7382e87](https://github.com/dyka3773/exoplings/commit/7382e87d29a78fb3fcff55a23e3559a613abbbbb) by Hercules Konsoulas).
+
