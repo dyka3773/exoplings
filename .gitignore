@@ -217,3 +217,5 @@ __marimo__/
 
 .notebooks/
 .vercel
+
+**/lightning_logs/**

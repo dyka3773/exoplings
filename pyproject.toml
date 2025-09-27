@@ -12,11 +12,13 @@ authors = [
 requires-python = ">=3.10"
 license = "MIT"
 dependencies = [
+    "batman-package>=2.5.3",
     "flask>=3.1.2",
+    "lightkurve==2.5.1",
     "pandas>=2.3.2",
     "plotly>=6.3.0",
     "python-dotenv>=1.1.1",
-    "scipy==1.9.3",
+    "scipy==1.11.1",
     "swyft>=0.4.5",
 ]
 
