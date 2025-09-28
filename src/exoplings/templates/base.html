@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}NASA SpaceApps 2025{% endblock %}</title>
+    <title>{% block title %}Exoplings{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,7 +11,8 @@
     <!-- Custom CSS -->
     <style>
         body {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: url("{{ url_for('static', filename='pexels-francesco-ungaro-998641.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
@@ -30,14 +31,14 @@
         }
         
         .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #343a40 0%, #495057 100%);
             color: white;
             border-radius: 15px 15px 0 0 !important;
             padding: 1.5rem;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #343a40 0%, #495057 100%);
             border: none;
             border-radius: 25px;
             padding: 0.75rem 2rem;
@@ -114,7 +115,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container d-flex align-items-center justify-content-between">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-            🚀 NASA SpaceApps 2025
+            🚀 Exoplings - NASA SpaceApps 2025
             </a>
             <div class="d-flex align-items-center flex-grow-1 justify-content-center mx-4">
                 <form class="d-flex search-form" id="searchForm" style="max-width: 400px; width: 100%;">
