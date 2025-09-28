@@ -307,7 +307,7 @@ def plot_smart_multiD_infer(network, trainer) -> Figure:
     fig_post = plot_corner_plotly(
         predictions,
         ["z[0]", "z[1]", "z[2]", "z[3]"],
-        labels=[r"$r_p/r_*$", "T [arbitrary units]", r"$i$ [deg]", r"$t_0$ [arbitrary units]"],
+        labels=["rₚ/r<sub>s</sub>", "T [arbitrary units]", "i [deg]", "t<sub>0</sub> [arbitrary units]"],
         truth={"z[0]": z_true[0], "z[1]": z_true[1], "z[2]": z_true[2], "z[3]": z_true[3]},
         bins=200,
         smooth=3,
