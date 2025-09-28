@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Upload Data - NASA SpaceApps 2025{% endblock %}
+{% block title %}Upload Data - Exoplings{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card">
             <div class="card-header text-center">
-                <h2 class="mb-0">🌌 NASA Data Visualization Tool</h2>
+                <h2 class="mb-0">🌌 Exoplings Searching for Other Exoplings</h2>
                 <p class="mb-0 mt-2">Upload your data file to create interactive visualizations</p>
             </div>
-            <div class="card-body p-5">
+            <div class="card-body p-4">
                 <form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
                     <div class="mb-4">
                         <label for="file" class="form-label h5">Select Data File</label>
@@ -32,6 +32,12 @@
                         </button>
                     </div>
                 </form>
+                
+                <div class="d-grid mt-3">
+                    <a href="{{ url_for('visualize', filename=['432549364', '308098254', '436875934', '259506033', '281541545'] | random) }}" class="btn btn-outline-secondary btn-lg">
+                        🪐 Pick Random TESS Planet
+                    </a>
+                </div>
                 
                 <hr class="my-5">
                 
@@ -62,10 +68,10 @@
             <div class="card-body">
                 <h5 class="card-title">💡 Tips for Better Visualizations</h5>
                 <ul class="list-unstyled">
-                    <li class="mb-2">✅ Ensure your data has clear column headers</li>
-                    <li class="mb-2">✅ Include both numerical and categorical data for richer plots</li>
-                    <li class="mb-2">✅ Clean your data beforehand for best results</li>
-                    <li class="mb-2">✅ Smaller files (< 1MB) will load faster</li>
+                    <li class="mb-2">✅ Ensure your light curve data has no gaps</li>
+                    <li class="mb-2">✅ Make sure your data is from TESS, Kepler or an instrument with similar noise level</li>
+                    <li class="mb-2">✅ The data must consist of 250 points</li>
+                    <li class="mb-2">✅ The column names should include <code>time_btjd</code> and <code>flux</code></li>
                 </ul>
             </div>
         </div>

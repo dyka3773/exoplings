@@ -2,9 +2,12 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import swyft
 import torch
 from plotly.graph_objs._figure import Figure
+from plotly.subplots import make_subplots
 from scipy.interpolate import CubicSpline
+from swyft.plot.plot import _get_HDI_thresholds, get_pdf
 
 from .app import simulator
 from .utils import compute_cdf, compute_credible_intervals
@@ -148,3 +151,166 @@ def create_posterior_lc_plot(z_true, null_xs, credible_intervals, mode):
     fig_lc.update_layout(xaxis_title="Arbitrary Time", yaxis_title="Normalized Flux", template="simple_white")
 
     return fig_lc
+
+
+def plot_corner_plotly(lrs_coll, parnames, labels=None, truth=None, bins=100, smooth=0.0, figsize=(600, 600)):
+    """
+    Minimal Plotly corner plot for swyft inference results.
+    """
+    K = len(parnames)
+    fig: Figure = make_subplots(rows=K, cols=K, shared_xaxes=False, shared_yaxes=False, horizontal_spacing=0.02, vertical_spacing=0.02)
+
+    if labels is None:
+        labels = parnames
+
+    for i in range(K):
+        for j in range(K):
+            if i < j:
+                continue  # upper triangle blank
+
+            # 1D marginal (diagonal)
+            if i == j:
+                v, zm = get_pdf(lrs_coll, parnames[i], bins=bins, smooth=smooth)
+                zm = zm[:, 0]
+
+                # Density curve
+                fig.add_trace(go.Scatter(x=zm, y=v, mode="lines", line=dict(color="black")), row=i + 1, col=j + 1)
+
+                # Credible interval shading (HDI bands)
+                levels = sorted(_get_HDI_thresholds(v, cred_level=[0.68268, 0.95450, 0.99730]))
+                y0, y1 = -0.05 * v.max(), 1.1 * v.max()
+                shades = ["whitesmoke", "gainsboro", "silver"]
+
+                for k, lvl in enumerate(levels):
+                    mask = v >= lvl
+                    if mask.any():
+                        lower, upper = zm[mask].min(), zm[mask].max()
+                        fig.add_shape(
+                            type="rect",
+                            x0=lower,
+                            x1=upper,
+                            y0=y0,
+                            y1=y1,
+                            fillcolor=shades[k],
+                            line=dict(color="rgba(0,0,0,0)"),
+                            opacity=0.3,
+                            layer="below",
+                            row=i + 1,
+                            col=j + 1,
+                        )
+
+                # Density curve
+                fig.add_trace(go.Scatter(x=zm, y=v, mode="lines", line=dict(color="black")), row=i + 1, col=j + 1)
+
+                # True value as red dashed line
+                if truth and parnames[i] in truth:
+                    fig.add_shape(
+                        type="line",
+                        x0=truth[parnames[i]],
+                        x1=truth[parnames[i]],
+                        y0=y0,
+                        y1=y1,
+                        line=dict(color="red", dash="dash"),
+                        row=i + 1,
+                        col=j + 1,
+                    )
+
+                # True value as red dashed line
+                if truth and parnames[i] in truth:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=[truth[parnames[i]], truth[parnames[i]]],
+                            y=[y0, y1],
+                            mode="lines",
+                            line=dict(color="red", dash="dash"),
+                            showlegend=False,
+                        ),
+                        row=i + 1,
+                        col=j + 1,
+                    )
+
+            # 2D joint posterior (lower triangle)
+            if j < i:
+                counts, xy = get_pdf(lrs_coll, [parnames[j], parnames[i]], bins=bins, smooth=smooth)
+                xbins = xy[:, 0]
+                ybins = xy[:, 1]
+
+                # Heatmap for smooth density
+                fig.add_trace(go.Heatmap(z=counts.T, x=xbins, y=ybins, colorscale="Greys", showscale=False), row=i + 1, col=j + 1)
+
+                # Contour lines for HDI levels
+                levels = sorted(_get_HDI_thresholds(counts, cred_level=[0.68268, 0.95450, 0.99730]))
+                fig.add_trace(
+                    go.Contour(
+                        z=counts.T,
+                        x=xbins,
+                        y=ybins,
+                        contours=dict(
+                            start=levels[0],
+                            end=levels[-1],
+                            size=(levels[-1] - levels[0]) / len(levels),
+                            coloring="none",  # just lines, no fill
+                        ),
+                        line=dict(color="black", width=1),
+                        showscale=False,
+                    ),
+                    row=i + 1,
+                    col=j + 1,
+                )
+
+                if truth:
+                    if parnames[j] in truth and parnames[i] in truth:
+                        fig.add_trace(
+                            go.Scatter(
+                                x=[truth[parnames[j]]],
+                                y=[truth[parnames[i]]],
+                                mode="markers",
+                                marker=dict(color="red", size=8, symbol="x"),
+                                name="truth",
+                            ),
+                            row=i + 1,
+                            col=j + 1,
+                        )
+
+            # Axis labels
+            if i == K - 1:
+                fig.update_xaxes(title_text=labels[j], row=i + 1, col=j + 1)
+            if j == 0 and i > 0:
+                fig.update_yaxes(title_text=labels[i], row=i + 1, col=j + 1)
+
+    fig.update_layout(
+        width=figsize[0],
+        height=figsize[1],
+        template="simple_white",
+        showlegend=False,
+        font=dict(size=18),  # increase font size here
+    )
+
+    fig.update_layout(margin=dict(l=50, r=50, t=50, b=50))
+
+    return fig
+
+
+def plot_smart_multiD_infer(network, trainer) -> Figure:
+    z_true = [0.1, 1.0, 88.0, 0.0]
+
+    # Run simulation
+    mysampless = simulator.sample(conditions={"z": z_true})
+    null_xs = mysampless["x"]
+
+    prior_samples = simulator.sample(targets=["x"], N=10000)
+    prior_samples["z"] = prior_samples["z"].astype(np.float32)
+
+    predictions = trainer.infer(network, swyft.Sample(x=null_xs), prior_samples)
+
+    # Build Plotly corner plot
+    fig_post = plot_corner_plotly(
+        predictions,
+        ["z[0]", "z[1]", "z[2]", "z[3]"],
+        labels=["rₚ/r<sub>s</sub>", "T [arbitrary units]", "i [deg]", "t<sub>0</sub> [arbitrary units]"],
+        truth={"z[0]": z_true[0], "z[1]": z_true[1], "z[2]": z_true[2], "z[3]": z_true[3]},
+        bins=200,
+        smooth=3,
+        figsize=(850, 600),
+    )
+    return fig_post

@@ -1,44 +1,63 @@
 {% extends "base.html" %}
 
-{% block title %}About Us - NASA SpaceApps 2025{% endblock %}
+{% block title %}About Us - Exoplings{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card">
             <div class="card-header text-center">
-                <h2 class="mb-0">🚀 About Us</h2>
-                <p class="mb-0 mt-2">NASA SpaceApps Challenge 2025 Submission</p>
+                <h2 class="mb-0">🚀 Exoplings</h2>
+                <p class="mb-0 mt-2">Beings waiting to be discovered by our Exoplanet detection tool</p>
             </div>
             <div class="card-body p-5">
                 <div class="mb-4 text-center">
                     <h4 class="mb-3">Our Mission</h4>
-                    <p class="lead">We are a team of space enthusiasts, coders, and data explorers participating in the
-                        NASA SpaceApps Challenge 2025. Our goal is to make NASA data more accessible and engaging for
-                        everyone through interactive visualizations and simple analysis tools.</p>
+                    <p class="lead">We are a team of mainly unemployed space enthusiasts, coders, and data explorers participating in the
+                        NASA SpaceApps Challenge 2025. Our goal is to make exoplanet detection more accessible and engaging for
+                        everyone through interactive visualizations and to find other exoplings like us.</p>
                 </div>
                 <hr class="my-4">
                 <div class="mb-4">
                     <h5 class="mb-2">🌟 What We Built</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2">• An easy-to-use web app for uploading and visualizing NASA-related data</li>
-                        <li class="mb-2">• Automatic light curve analysis and exoplanet detection (demo)</li>
+                        <li class="mb-2">• An easy-to-use web app to visualize NASA's data about light curves and exoplanet detections</li>
+                        <li class="mb-2">• Automatic light curve analysis and parameterized inference</li>
                         <li class="mb-2">• Clean, modern interface for exploring your data</li>
                     </ul>
                 </div>
                 <hr class="my-4">
                 <div class="mb-4">
                     <h5 class="mb-2">👨‍💻 Our Team</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2">• John Liodis</li>
-                        <li class="mb-2">• Stacy Topalidou</li>
-                        <li class="mb-2">• Mike Liodis</li>
-                        <li class="mb-2">• Herck Konsoulas</li>
-                        <li class="mb-2">• John Doe</li>
-                    </ul>
+                    <div class="row row-cols-2 row-cols-md-3 g-4 justify-content-center">
+                        <div class="col text-center">
+                            <img src="/static/avatars/ioannis.png" alt="Ioannis Liodis" class="rounded-circle mb-2" width="80" height="80">
+                            <div>Ioannis Liodis</div>
+                        </div>
+                        <div class="col text-center">
+                            <img src="/static/avatars/anastasia.png" alt="Anastasia Topalidou" class="rounded-circle mb-2" width="80" height="80">
+                            <div>Anastasia Topalidou</div>
+                        </div>
+                        <div class="col text-center">
+                            <img src="/static/avatars/michalis.png" alt="Michalis Liodis" class="rounded-circle mb-2" width="80" height="80">
+                            <div>Michalis Liodis</div>
+                        </div>
+                        <div class="col text-center">
+                            <img src="/static/avatars/iraklis.png" alt="Iraklis Konsoulas" class="rounded-circle mb-2" width="80" height="80">
+                            <div>Iraklis Konsoulas</div>
+                        </div>
+                        <div class="col text-center">
+                            <img src="/static/avatars/dimitris.png" alt="Dimitris Tzotzis" class="rounded-circle mb-2" width="80" height="80">
+                            <div>Dimitris Tzotzis</div>
+                        </div>
+                        <div class="col text-center">
+                            <img src="/static/avatars/giorgos.png" alt="Giorgos Tollilis" class="rounded-circle mb-2" width="80" height="80">
+                            <div>Giorgos Tollilis</div>
+                        </div>
+                    </div>
                 </div>
                 <hr class="my-4">
-                <div class="mb-4">
+                <div class="mb-2">
                     <h5 class="mb-2">🔗 Useful Links</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="https://www.spaceappschallenge.org/" target="_blank">NASA SpaceApps
@@ -47,6 +66,7 @@
                                 href="https://www.spaceappschallenge.org/2025/challenges/a-world-away-hunting-for-exoplanets-with-ai/"
                                 target="_blank">Our Challenge</a></li>
                         <li class="mb-2"><a href="https://data.nasa.gov/" target="_blank">NASA Open Data Portal</a></li>
+                        <li><a href="https://github.com/dyka3773/exoplings" target="_blank">Our GitHub Repository</a></li>
                     </ul>
                 </div>
             </div>

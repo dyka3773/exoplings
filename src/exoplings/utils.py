@@ -11,7 +11,7 @@ def allowed_file(filename):
     }
 
 
-def get_most_recent_curves(directory="uploads", limit=10):
+def get_most_recent_curves(directory=".uploads", limit=10):
     """Retrieve the most recent light curve files from the upload directory.
 
     Args:
