@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v1.5.0](https://github.com/dyka3773/exoplings/releases/tag/v1.5.0) - 2025-09-28
+
+<small>[Compare with v1.4.0](https://github.com/dyka3773/exoplings/compare/v1.4.0...v1.5.0)</small>
+
+### Features
+
+- add ourselves in the about us page ([e46953b](https://github.com/dyka3773/exoplings/commit/e46953b3bdab2b45087af5c3d53579bc1dad2f5e) by Hercules Konsoulas).
+- change background image and theme. ([d436492](https://github.com/dyka3773/exoplings/commit/d4364920f4501a47f119abb9e8b7d30b0df4f17e) by Hercules Konsoulas).
+- add full support for both csv and nasa's data with multi dim inference ([87cf537](https://github.com/dyka3773/exoplings/commit/87cf5370229017851ae374c495d12b014cbd5f83) by Hercules Konsoulas).
+- add support for multi dim inference ([c022274](https://github.com/dyka3773/exoplings/commit/c022274f6c378b341b234070a36001114780b202) by Hercules Konsoulas).
+
+### Bug Fixes
+
+- correct the corner plot axes labels ([5b2ae3b](https://github.com/dyka3773/exoplings/commit/5b2ae3b8b6ba6dded40664222bc52ec73f78885c) by Hercules Konsoulas).
+
 ## [v1.4.0](https://github.com/dyka3773/exoplings/releases/tag/v1.4.0) - 2025-09-27
 
 <small>[Compare with v1.3.0](https://github.com/dyka3773/exoplings/compare/v1.3.0...v1.4.0)</small>
@@ -47,3 +62,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Features
 
 - move routing in a separate module and add an "about us" page ([7382e87](https://github.com/dyka3773/exoplings/commit/7382e87d29a78fb3fcff55a23e3559a613abbbbb) by Hercules Konsoulas).
+
