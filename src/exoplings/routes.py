@@ -15,7 +15,6 @@ from .app import (
     trainer,
 )
 from .data_processing import load_data
-from .PlanetDetailExtractor import PlanetDetailExtractor
 from .plot_processing import create_posterior_1D_plot, create_posterior_lc_plot, create_simple_lc_plot, plot_smart_multiD_infer
 from .utils import allowed_file, get_most_recent_curves
 
@@ -60,7 +59,7 @@ def register_routes(app):
         """
         if "file" not in request.files or request.files["file"] is None or request.files["file"] == "":
             flash("No file selected")
-            return redirect(request.url)
+            return redirect(url_for("index"))
 
         file = request.files["file"]
 
