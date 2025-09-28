@@ -32,7 +32,11 @@
                         <span class="me-2" style="font-size:1.3rem;">📈</span>
                         <h5 class="mb-0 fw-semibold text-primary">Highest Probability Light Curve Model</h5>
                     </div>
+                    {% if posterior_lc_plot_json %}
                     <div id="plotly-posterior-lc-chart"></div>
+                    {% else %}
+                    <p class="text-muted">Plot Unavailable</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -42,7 +46,11 @@
                 <h3 class="mb-0">📊 Multi Dimensional Inference</h3>
             </div>
             <div class="card-body">
-                <div id="plotly-corner-chart"></div>
+                {% if corner_plot_json %}
+                    <div id="plotly-corner-chart"></div>
+                {% else %}
+                    <p class="text-muted">Plot Unavailable</p>
+                {% endif %}
             </div>
         </div>
     </div>

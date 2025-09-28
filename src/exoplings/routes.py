@@ -42,6 +42,15 @@ def register_routes(app):
         """
         return render_template("about.html")
 
+    @app.route("/model")
+    def model():
+        """Render the model page.
+
+        Returns:
+            Rendered model.html template.
+        """
+        return render_template("model.html")
+
     @app.route("/upload", methods=["POST"])
     def upload_file():
         """Upload and process a light curve data file.
@@ -91,31 +100,23 @@ def register_routes(app):
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
 
         if not os.path.exists(filepath):
-            flash("File not found")
-            return redirect(url_for("index"))
+            try:
+                # In case filename is an integer, we assume it's a planet ID, not a file, so we convert it
+                # If this fails, we flash an error and redirect
+                filepath = int(filename)
+            except ValueError:
+                flash("File not found")
+                return redirect(url_for("index"))
+
         try:
-            # df = load_data(filepath)
+            df, planet_params = load_data(filepath)
 
-            # planet_name = myplanets.confirmed_planets().sample(1)["tid"].values[0]  # tid, toi
-            planet_name = 432549364
+            light_curve_fig: Figure = create_simple_lc_plot(df)
 
-            planet_extractor = PlanetDetailExtractor(telescope="tess")
-            planet_params = planet_extractor.find_planet_details(planet_name)
-
-            tempdf = planet_extractor.find_data_tess(
-                planet_name,
-                period_days=planet_params["per"],
-                t0_btjd=planet_params["t0"],
-                window=planet_params["duration"],
-                points=250,
-                cadence="short",
-            )
-            light_curve_fig: Figure = create_simple_lc_plot(tempdf)
-
-            real_test = tempdf["flux"].values
+            real_test = df["flux"].values.astype("float32")
 
             data_info = {
-                "filename": planet_name,
+                "filename": filepath if isinstance(filepath, str) else f"Planet ID: {filepath}",
             }
 
             prior_samples = swyft.Samples({"z": torch.linspace(0.0, 0.3, 10000)})
@@ -127,14 +128,27 @@ def register_routes(app):
             processing_time = int((end_time - starting_time) * 1000)  # in milliseconds
 
             conversion_factor = 1 / (0.022 * 24.0) * 3.2
-            z_true = [planet_params["z"], planet_params["duration"] * conversion_factor, 90.0, 0.0]
+            z_true = [
+                planet_params["z"],
+                planet_params["duration"] * conversion_factor if planet_params["duration"] else 100,
+                90.0,
+                0.0,
+            ]
 
             posterior_fig, credible_intervals, mode, certainty, is_exoplanet = create_posterior_1D_plot(z_true, predictions)
-            posterior_lc_fig = create_posterior_lc_plot(z_true, real_test, credible_intervals, mode)
 
-            # TODO: re-enable when model is ready
-            posterior_corner_fig = create_posterior_lc_plot(z_true, real_test, credible_intervals, mode)
-            # posterior_corner_fig = plot_smart_multiD_infer(network_multi, trainer)
+            print(posterior_fig)
+
+            posterior_lc_fig = None
+
+            # in case of CSV do not produce posterior lc plot because of missing true values
+            if planet_params["z"]:
+                print("Creating posterior LC plot")
+                posterior_lc_fig = create_posterior_lc_plot(z_true, real_test, credible_intervals, mode)
+
+            posterior_corner_fig = plot_smart_multiD_infer(network_multi, trainer)
+
+            print(f"Posterior LC Fig: {posterior_lc_fig}")
 
             light_curve_plot_json = json.dumps(light_curve_fig, cls=plotly.utils.PlotlyJSONEncoder)
             posterior_plot_json = json.dumps(posterior_fig, cls=plotly.utils.PlotlyJSONEncoder)

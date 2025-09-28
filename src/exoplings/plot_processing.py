@@ -311,6 +311,6 @@ def plot_smart_multiD_infer(network, trainer) -> Figure:
         truth={"z[0]": z_true[0], "z[1]": z_true[1], "z[2]": z_true[2], "z[3]": z_true[3]},
         bins=200,
         smooth=3,
-        figsize=(1800, 1800),
+        figsize=(850, 600),
     )
     return fig_post
