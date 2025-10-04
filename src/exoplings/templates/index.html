@@ -11,7 +11,7 @@
                 <p class="mb-0 mt-2">Upload your data file to create interactive visualizations</p>
             </div>
             <div class="card-body p-4">
-                <form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+                <form method="POST" id="uploadDataForm" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
                     <div class="mb-4">
                         <label for="file" class="form-label h5">Select Data File</label>
                         <input type="file" 
@@ -32,12 +32,28 @@
                         </button>
                     </div>
                 </form>
+                <script>
+                    document.getElementById('uploadDataForm').addEventListener('submit', function(e) {
+                        var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                        modal.show();
+                    });
+                </script>
                 
                 <div class="d-grid mt-3">
-                    <a href="{{ url_for('visualize', filename=['432549364', '308098254', '436875934', '259506033', '281541545'] | random) }}" class="btn btn-outline-secondary btn-lg">
-                        🪐 Pick Random TESS Planet
+                    <!-- Button to pick random TESS planet -->
+                    <a href="{{ url_for('visualize', filename=['432549364', '308098254', '436875934', '259506033', '281541545'] | random) }}"
+                        class="btn btn-outline-secondary btn-lg"
+                        id="pick-random-btn">
+                         🪐 Pick Random TESS Planet
                     </a>
                 </div>
+                <script>
+                    document.getElementById('pick-random-btn').addEventListener('click', function(e) {
+                        // Show loading modal
+                        var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                        modal.show();
+                    });
+                </script>
                 
                 <hr class="my-5">
                 
