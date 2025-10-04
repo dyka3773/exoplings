@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v1.6.0](https://github.com/dyka3773/exoplings/releases/tag/v1.6.0) - 2025-10-04
+
+<small>[Compare with v1.5.0](https://github.com/dyka3773/exoplings/compare/v1.5.0...v1.6.0)</small>
+
+### Features
+
+- add support for kepler data ([a32da65](https://github.com/dyka3773/exoplings/commit/a32da65305a55259e6579ac0a13a0b366734d261) by Hercules Konsoulas).
+- add a "pick a random planet" in the visualization screen ([f902d97](https://github.com/dyka3773/exoplings/commit/f902d97ed7b6d669162dff814433670d185316e1) by Hercules Konsoulas).
+- add a loading dialog box when loading a visualization screen ([e95a8d7](https://github.com/dyka3773/exoplings/commit/e95a8d7c2d7372b9937184f9e8b4f1e6d6684509) by Hercules Konsoulas).
+
+### Bug Fixes
+
+- csv loading no longer throws errors and presents the correct diagrams ([2f64cdd](https://github.com/dyka3773/exoplings/commit/2f64cdd954fed0ed5ac4563bfba22a1ade8bff21) by Hercules Konsoulas).
+
 ## [v1.5.0](https://github.com/dyka3773/exoplings/releases/tag/v1.5.0) - 2025-09-28
 
 <small>[Compare with v1.4.0](https://github.com/dyka3773/exoplings/compare/v1.4.0...v1.5.0)</small>
@@ -62,3 +76,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Features
 
 - move routing in a separate module and add an "about us" page ([7382e87](https://github.com/dyka3773/exoplings/commit/7382e87d29a78fb3fcff55a23e3559a613abbbbb) by Hercules Konsoulas).
+
