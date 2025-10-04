@@ -85,6 +85,18 @@
                     <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
                         📁 Upload New File
                     </a>
+                    <a href="{{ url_for('visualize', filename=['432549364', '308098254', '436875934', '259506033', '281541545'] | random) }}"
+                        class="btn btn-outline-secondary"
+                        id="pick-random-btn">
+                         🪐 Pick Random TESS Planet
+                    </a>
+                    <script>
+                        document.getElementById('pick-random-btn').addEventListener('click', function(e) {
+                            // Show loading modal
+                            var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                            modal.show();
+                        });
+                </script>
                 </div>
             </div>
         </div>
