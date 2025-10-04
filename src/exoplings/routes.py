@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from pathlib import Path
 
 import plotly.utils
 import swyft
@@ -9,11 +10,9 @@ from flask import flash, redirect, render_template, request, url_for
 from plotly.graph_objs._figure import Figure
 from werkzeug.utils import secure_filename
 
-from .app import (
-    multi_d_network as network_multi,
-    one_d_network as network,
-    trainer,
-)
+from .app import multi_d_network as network_multi
+from .app import one_d_network as network
+from .app import trainer
 from .data_processing import load_data
 from .plot_processing import create_posterior_1D_plot, create_posterior_lc_plot, create_simple_lc_plot, plot_smart_multiD_infer
 from .utils import allowed_file, get_most_recent_curves
@@ -73,17 +72,17 @@ def register_routes(app):
             file.save(filepath)
 
             try:
-                df = load_data(filepath)
+                df, _ = load_data(filepath)
                 flash(f"File uploaded successfully! Found {len(df)} rows and {len(df.columns)} columns.")
                 return redirect(url_for("visualize", filename=filename))
 
             except Exception as e:
                 flash(f"Error processing file: {str(e)}")
                 os.remove(filepath)
-                return redirect(request.url)
+                return redirect(url_for("index"))
         else:
             flash("Invalid file type. Please upload a CSV file.")
-            return redirect(request.url)
+            return redirect(url_for("index"))
 
     @app.route("/visualize/<filename>")
     def visualize(filename):
@@ -115,7 +114,7 @@ def register_routes(app):
             real_test = df["flux"].values.astype("float32")
 
             data_info = {
-                "filename": filepath if isinstance(filepath, str) else f"Planet ID: {filepath}",
+                "filename": Path(filepath).name if isinstance(filepath, str) else f"Planet ID: {filepath}",
             }
 
             prior_samples = swyft.Samples({"z": torch.linspace(0.0, 0.3, 10000)})
@@ -135,19 +134,12 @@ def register_routes(app):
             ]
 
             posterior_fig, credible_intervals, mode, certainty, is_exoplanet = create_posterior_1D_plot(z_true, predictions)
-
-            print(posterior_fig)
-
             posterior_lc_fig = None
-
             # in case of CSV do not produce posterior lc plot because of missing true values
             if planet_params["z"]:
-                print("Creating posterior LC plot")
-                posterior_lc_fig = create_posterior_lc_plot(z_true, real_test, credible_intervals, mode)
+                posterior_lc_fig: Figure = create_posterior_lc_plot(z_true, real_test, credible_intervals, mode)
 
             posterior_corner_fig = plot_smart_multiD_infer(network_multi, trainer)
-
-            print(f"Posterior LC Fig: {posterior_lc_fig}")
 
             light_curve_plot_json = json.dumps(light_curve_fig, cls=plotly.utils.PlotlyJSONEncoder)
             posterior_plot_json = json.dumps(posterior_fig, cls=plotly.utils.PlotlyJSONEncoder)
@@ -158,7 +150,7 @@ def register_routes(app):
                 "visualize.html",
                 light_curve_plot_json=light_curve_plot_json,
                 posterior_plot_json=posterior_plot_json,
-                posterior_lc_plot_json=posterior_lc_plot_json,
+                posterior_lc_plot_json=posterior_lc_plot_json if posterior_lc_fig else None,
                 corner_plot_json=posterior_corner_plot_json,
                 data_info=data_info,
                 exoplanet_result={"is_exoplanet": is_exoplanet, "certainty": certainty},
@@ -166,5 +158,7 @@ def register_routes(app):
                 processing_time=processing_time,
             )
         except Exception as e:
+            flash(f"Error visualizing data: {str(e)}")
+            return redirect(url_for("index"))
             flash(f"Error visualizing data: {str(e)}")
             return redirect(url_for("index"))
