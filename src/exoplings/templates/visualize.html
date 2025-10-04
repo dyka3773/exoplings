@@ -85,6 +85,18 @@
                     <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
                         📁 Upload New File
                     </a>
+                    <a href="{{ url_for('visualize', filename_or_id=['432549364', '308098254', '436875934', '259506033', '281541545'] | random) }}"
+                        class="btn btn-outline-secondary"
+                        id="pick-random-btn">
+                         🪐 Pick Random TESS Planet
+                    </a>
+                    <script>
+                        document.getElementById('pick-random-btn').addEventListener('click', function(e) {
+                            // Show loading modal
+                            var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                            modal.show();
+                        });
+                </script>
                 </div>
             </div>
         </div>
@@ -116,7 +128,7 @@
                             <div class="card shadow-sm border-0 h-100">
                                 <div class="card-body py-3 d-flex align-items-center">
                                     <span class="me-2" style="font-size:1rem;">📄</span>
-                                    <a href="{{ url_for('visualize', filename=curve) }}" class="fw-bold text-primary text-decoration-none">
+                                    <a href="{{ url_for('visualize', filename_or_id=curve) }}" class="fw-bold text-primary text-decoration-none">
                                         {{ curve }}
                                     </a>
                                 </div>
@@ -140,11 +152,16 @@
 <script>
 // Render the Plotly chart
 document.addEventListener('DOMContentLoaded', function() {
+    {% if posterior_lc_plot_json %}
+    const posterior_lc_plot_data = {{ posterior_lc_plot_json|safe }};
+    {% else %}
+    const posterior_lc_plot_data = null;
+    {% endif %}
+
     const light_curve_plot_data = {{ light_curve_plot_json|safe }};
     const posterior_plot_data = {{ posterior_plot_json|safe }};
-    const posterior_lc_plot_data = {{ posterior_lc_plot_json|safe }};
     const corner_plot_data = {{ corner_plot_json|safe }};
-    
+
     // Configuration for the plot
     const light_curve_configs = {
         responsive: true,
@@ -223,16 +240,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    const posterior_lc_layout = {
-        ...posterior_lc_plot_data.layout,
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: {
-            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-            size: 12
-        }
-    };
-
     const corner_layout = {
         ...corner_plot_data.layout,
         paper_bgcolor: 'rgba(0,0,0,0)',
@@ -242,19 +249,36 @@ document.addEventListener('DOMContentLoaded', function() {
             size: 12
         }
     };
+
+    var posterior_lc_layout = null;
+    if (posterior_lc_plot_data) {
+        posterior_lc_layout = {
+            ...posterior_lc_plot_data.layout,
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: {
+                family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                size: 12
+            }
+        };
+    }
     
     // Render the plot
     Plotly.newPlot('plotly-chart', light_curve_plot_data.data, light_curve_layout, light_curve_configs);
     Plotly.newPlot('plotly-posterior-chart', posterior_plot_data.data, posterior_layout, posterior_configs);
-    Plotly.newPlot('plotly-posterior-lc-chart', posterior_lc_plot_data.data, posterior_lc_layout, posterior_lc_configs);
     Plotly.newPlot('plotly-corner-chart', corner_plot_data.data, corner_layout, corner_configs);
+
+    if (posterior_lc_plot_data) {
+        Plotly.newPlot('plotly-posterior-lc-chart', posterior_lc_plot_data.data, posterior_lc_layout, posterior_lc_configs);
+    }
 
     // Handle window resize
     window.addEventListener('resize', function() {
         Plotly.Plots.resize('plotly-posterior-chart');
-        Plotly.Plots.resize('plotly-posterior-lc-chart');
         Plotly.Plots.resize('plotly-chart');
         Plotly.Plots.resize('plotly-corner-chart');
+        if (posterior_lc_plot_data)
+            Plotly.Plots.resize('plotly-posterior-lc-chart');
     });
 });
 </script>

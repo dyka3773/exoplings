@@ -81,12 +81,17 @@ def create_posterior_1D_plot(z_true, predictions) -> tuple[Figure, list[tuple[fl
     )
 
     # Add vertical line at true z
-    fig_post.add_vline(x=z_true[0], line=dict(color="red"))
+    if z_true[0] is not None:
+        fig_post.add_vline(x=z_true[0], line=dict(color="red"))
 
     # Add x-axis label
     fig_post.update_xaxes(title="rₚ/r<sub>s</sub>")
 
-    fig_post.add_trace(go.Scatter(x=[z_true[0], z_true[0]], y=[y_min, y_max], mode="lines", line=dict(color="red", dash="dash"), name="True value"))
+    if z_true[0] is not None:
+        fig_post.add_trace(
+            go.Scatter(x=[z_true[0], z_true[0]], y=[y_min, y_max], mode="lines", line=dict(color="red", dash="dash"), name="True value")
+        )
+
     fig_post.update_xaxes(range=[0, min(zmax + 3 * dhigh, 0.3)])
 
     mode: float = z_values[torch.argmax(density)].item()
@@ -96,6 +101,9 @@ def create_posterior_1D_plot(z_true, predictions) -> tuple[Figure, list[tuple[fl
     cs = CubicSpline(z_values, cdf)
     z_cutoff = 0.05  # test and change that
     certainty = cs(z_cutoff)
+
+    print(f"Certainty: {certainty}, Mode: {mode}, True z: {z_true[0]}")
+
     if certainty >= 0.9:
         is_exoplanet = False
     else:
