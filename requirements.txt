@@ -202,7 +202,7 @@ python-dateutil==2.9.0.post0
     #   pandas
 python-dotenv==1.1.1
     # via exoplings (pyproject.toml)
-pytorch-lightning==1.9.5
+pytorch-lightning==2.4.0
     # via swyft
 pytz==2025.2
     # via pandas
