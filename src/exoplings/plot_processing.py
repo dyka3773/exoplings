@@ -101,6 +101,9 @@ def create_posterior_1D_plot(z_true, predictions) -> tuple[Figure, list[tuple[fl
     cs = CubicSpline(z_values, cdf)
     z_cutoff = 0.05  # test and change that
     certainty = cs(z_cutoff)
+
+    print(f"Certainty: {certainty}, Mode: {mode}, True z: {z_true[0]}")
+
     if certainty >= 0.9:
         is_exoplanet = False
     else:

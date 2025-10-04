@@ -51,7 +51,7 @@ class PlanetDetailExtractor:
         }
         return localdict
 
-    def find_planet_details_tess(self, planet_name):
+    def find_planet_details_tess(self, planet_name: int):
         # The catalog may use 'toi' or 'pl_name' as identifier; adjust as needed
         # if 'pl_name' in self.df.columns:
         #     localdf = self.df[self.df['pl_name'] == planet_name].copy()
@@ -67,7 +67,7 @@ class PlanetDetailExtractor:
         else:
             return self.convert2convention_tess(localdf)
 
-    def find_planet_details_kepler(self, planet_name):
+    def find_planet_details_kepler(self, planet_name: str):
         # df['koi_period']    #days
         # df['koi_impact']    #impact parameter
         # df['koi_duration']  #hrs
@@ -86,7 +86,7 @@ class PlanetDetailExtractor:
         else:
             return self.convert2convention_kepler(localdf)
 
-    def find_planet_details(self, planet_name):
+    def find_planet_details(self, planet_name: str | int):
         if self.telescope == "kepler":
             return self.find_planet_details_kepler(planet_name)
         elif self.telescope == "tess":

@@ -2,38 +2,54 @@ import pathlib
 
 import pandas as pd
 
+from .app import app
 from .PlanetDetailExtractor import PlanetDetailExtractor
 
-planet_extractor = PlanetDetailExtractor(telescope="tess")
+tess_planet_extractor = PlanetDetailExtractor(telescope="tess")
+kepler_planet_extractor = PlanetDetailExtractor(telescope="kepler")
 
 
-def load_data(filepath) -> tuple[pd.DataFrame, dict]:
-    """Load data from various file formats."""
-    if isinstance(filepath, int):
-        planet_params = planet_extractor.find_planet_details(filepath)
+def load_data(data) -> tuple[pd.DataFrame, dict]:
+    """Load data from a file path or identifier.
 
-        print(planet_params)
+    Args:
+        data (str | int): File path to CSV file or integer ID for TESS/Kepler data.
 
-        df = planet_extractor.find_data_tess(
-            filepath,
-            period_days=planet_params["per"],
-            t0_btjd=planet_params["t0"],
-            window=planet_params["duration"],
-            points=250,
-            cadence="short",
-        )
-
-        return df, planet_params
-
-    elif isinstance(filepath, str) and pathlib.Path(filepath).is_file():
-        file_ext = filepath.rsplit(".", 1)[1].lower()
-        if file_ext == "csv":
-            df = pd.read_csv(filepath)
-        else:
-            raise ValueError(f"Unsupported file format: {file_ext}")
+    Returns:
+        tuple[pd.DataFrame, dict]: DataFrame with light curve data and dictionary with planet parameters.
+    """
+    possible_uploaded_path = pathlib.Path(app.config["UPLOAD_FOLDER"]) / str(data)
+    if possible_uploaded_path.exists() and possible_uploaded_path.is_file() and possible_uploaded_path.suffix.lower() == ".csv":
+        df = pd.read_csv(possible_uploaded_path)
         return df, {
             "z": None,
             "duration": None,
         }
 
-    return pd.DataFrame(), dict()  # Return empty DataFrame if no valid data is loaded
+    else:
+        try:
+            planet_id = int(data)
+            planet_params = tess_planet_extractor.find_planet_details(planet_id)
+
+            df = tess_planet_extractor.find_data_tess(
+                planet_id,
+                period_days=planet_params["per"],
+                t0_btjd=planet_params["t0"],
+                window=planet_params["duration"],
+            )
+
+            return df, planet_params
+        except (ValueError, TypeError):
+            planet_id = str(data)
+            planet_params = kepler_planet_extractor.find_planet_details(planet_id)
+
+            if planet_params is None:
+                raise ValueError(f"No planet details found for identifier: {data}")
+
+            df = kepler_planet_extractor.find_data_kepler(
+                planet_id,
+                period_days=planet_params["per"],
+                t0_btjd=planet_params["t0"],
+                window=planet_params["duration"],
+            )
+            return df, planet_params
