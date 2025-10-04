@@ -18,7 +18,7 @@ app = Flask(
 app.secret_key = os.environ.get("SECRET_KEY", "your-secret-key-change-this-in-production")
 
 # Configuration
-UPLOAD_FOLDER = ".uploads"
+UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", ".uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max file size
 
