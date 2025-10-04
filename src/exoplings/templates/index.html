@@ -41,7 +41,7 @@
                 
                 <div class="d-grid mt-3">
                     <!-- Button to pick random TESS planet -->
-                    <a href="{{ url_for('visualize', filename=['432549364', '308098254', '436875934', '259506033', '281541545'] | random) }}"
+                    <a href="{{ url_for('visualize', filename_or_id=['432549364', '308098254', '436875934', '259506033', '281541545'] | random) }}"
                         class="btn btn-outline-secondary btn-lg"
                         id="pick-random-btn">
                          🪐 Pick Random TESS Planet
@@ -102,7 +102,7 @@
                             <div class="card shadow-sm border-0 h-100">
                                 <div class="card-body py-3 d-flex align-items-center">
                                     <span class="me-2" style="font-size:1.5rem;">📄</span>
-                                    <a href="{{ url_for('visualize', filename=curve) }}" class="fw-bold text-primary text-decoration-none">
+                                    <a href="{{ url_for('visualize', filename_or_id=curve) }}" class="fw-bold text-primary text-decoration-none">
                                         {{ curve }}
                                     </a>
                                 </div>

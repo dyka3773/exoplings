@@ -1,7 +1,6 @@
 import json
 import os
 import time
-from pathlib import Path
 
 import plotly.utils
 import swyft
@@ -84,37 +83,25 @@ def register_routes(app):
             flash("Invalid file type. Please upload a CSV file.")
             return redirect(url_for("index"))
 
-    @app.route("/visualize/<filename>")
-    def visualize(filename):
+    @app.route("/visualize/<filename_or_id>")
+    def visualize(filename_or_id):
         """Visualize the uploaded light curve data.
 
         Args:
-            filename (str): The name of the uploaded file.
+            filename_or_id (str): The name of the uploaded file.
 
         Returns:
-            Rendered visualize.html template with plot and data info.
+            Rendered visualize.html template with plots and data info.
         """
-
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-
-        if not os.path.exists(filepath):
-            try:
-                # In case filename is an integer, we assume it's a planet ID, not a file, so we convert it
-                # If this fails, we flash an error and redirect
-                filepath = int(filename)
-            except ValueError:
-                flash("File not found")
-                return redirect(url_for("index"))
-
         try:
-            df, planet_params = load_data(filepath)
+            df, planet_params = load_data(filename_or_id)
 
             light_curve_fig: Figure = create_simple_lc_plot(df)
 
             real_test = df["flux"].values.astype("float32")
 
             data_info = {
-                "filename": Path(filepath).name if isinstance(filepath, str) else f"Planet ID: {filepath}",
+                "filename": f"Planet: {filename_or_id}",
             }
 
             prior_samples = swyft.Samples({"z": torch.linspace(0.0, 0.3, 10000)})
