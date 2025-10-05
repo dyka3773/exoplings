@@ -3,59 +3,304 @@
 {% block title %}About Us - Exoplings{% endblock %}
 
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card">
             <div class="card-header text-center">
-                <h2 class="mb-0">🚀 About Us</h2>
-                <p class="mb-0 mt-2">NASA SpaceApps Challenge 2025 Submission</p>
+                <h2 class="mb-0">🚀 About Our Models</h2>
             </div>
             <div class="card-body p-5">
-                <div class="mb-4 text-center">
-                    <h4 class="mb-3">Our Mission</h4>
-                    <p class="lead">We are a team of space enthusiasts, coders, and data explorers participating in the
-                        NASA SpaceApps Challenge 2025. Our goal is to make NASA data more accessible and engaging for
-                        everyone through interactive visualizations and simple analysis tools.</p>
+                <div class="mb-4">
+                    <h4 class="mb-3" id="forward-model">Forward Model</h4>
+                    <p>Our forward model is a LC simulator based on <a
+                            href="https://iopscience.iop.org/article/10.1086/683602"><code>batman</code></a>
+                        python library. We denote it as <em>physical simulator</em>, which is
+                        then translated into a graphical representation to match the <a
+                            href="https://joss.theoj.org/papers/10.21105/joss.04205"><code>swyft</code></a>
+                        python library.</p>
+
+                    <h5 class="mb-3" id="physical-simulator">Physical Simulator</h5>
+                    <p>We choose four model parameters: planet's radius in stellar radii
+                        <span class="math inline">\(r_p\)</span> [<span class="math inline">\(r_*\)</span>], impact
+                        parameter <span class="math inline">\(b\)</span>, transit duration <span
+                            class="math inline">\(d\)</span> and central time of transit <span
+                            class="math inline">\(t_0\)</span>. Limb darkening effects are
+                        neglected. The parameters <span class="math inline">\(\mathbf{z} =
+                            (r_p,b,d,t_0)\)</span> are then translated to <code>batman</code>'s
+                        inputs. For each input parameters selection, we create a LC consisting
+                        of 250 points in the time range <span class="math inline">\(t \in
+                            [-0.05, 0.05]\)</span> in period units. The output is the ground-truth
+                        LC in normalized flux. We then add Gaussian noise with the same level as
+                        real TESS noise.
+                    </p>
+
+                    <h5 class="mb-3" id="swyft-simulator">Swyft Simulator</h5>
+                    <p>We define the full statistical model <span class="math display">\[\label{eq:sbi_sim_stat_model}
+                            p(\mathbf{x}, \mathbf{m}, \mathbf{z}) = p(\mathbf{x} \mid
+                            \mathbf{m})\, p(\mathbf{m} \mid \mathbf{z})\, p(\mathbf{z}),\]</span>
+                        where <span class="math inline">\(\mathbf{z}\)</span> denotes the planet
+                        parameters to be inferred, <span class="math inline">\(\mathbf{m}\)</span> represents the
+                        ground-truth
+                        LC, and <span class="math inline">\(\mathbf{x}\)</span> is the synthetic
+                        data, i.e. the noisy LC.</p>
+                    <p>We model TESS's noise as Gaussian, such that the likelihood takes the
+                        form <span class="math display">\[p(\mathbf{x} \mid \mathbf{m}) =
+                            \mathcal{N}(\mathbf{x} \mid \mathbf{m}, \sigma),\]</span> The prior
+                        distribution for <span class="math inline">\((b,d,t_0)\)</span> is
+                        assumed to be uniform, while the one for <span class="math inline">\(r_p\)</span> is uniform on
+                        its square root and
+                        then squared, in order to train the network better on small radii, where
+                        the inference is more difficult <span class="math display">\[\begin{aligned}
+                            p(\mathbf{z}) =\;&amp;
+                            \mathcal{U}(\sqrt{r_p} \mid 0, \sqrt{0.3}) \nonumber \\
+                            &amp;\times\, \mathcal{U}(b \mid 0, 1) \nonumber \\
+                            &amp;\times\, \mathcal{U}(d \mid 0.025, 0.075) \nonumber \\
+                            &amp;\times\, \mathcal{U}(t_0 \mid -0.01, 0.01).
+
+                            \end{aligned}\]</span></p>
+                    <p>In line with the structure of the physical simulator, the conditional
+                        distribution <span class="math inline">\(p(\mathbf{m} \mid
+                            \mathbf{z})\)</span> is implemented using <code>batman</code>.</p>
                 </div>
                 <hr class="my-4">
                 <div class="mb-4">
-                    <h5 class="mb-2">🌟 What We Built</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2">• An easy-to-use web app for uploading and visualizing NASA-related data</li>
-                        <li class="mb-2">• Automatic light curve analysis and exoplanet detection (demo)</li>
-                        <li class="mb-2">• Clean, modern interface for exploring your data</li>
+                    <h4 class="mb-3" id="inference-models-details">Inference Models Details</h4>
+                    <p>We present two inference models, <code>EDIMS-1D</code> and
+                        <code>EDIMS-multiD</code>. The first is trained to infer the
+                        one-dimensional marginal posterior of the ratio <span class="math inline">\(z = r_p/r_*\)</span>
+                        (planet radius over star
+                        radius), while the second is trained to infer both the marginal and
+                        joint posterior distributions of all four parameters of our model <span
+                            class="math inline">\((z,b,d,t_0)\)</span>: radius ratio, impact
+                        parameter, duration and central time of transit. The training as well as
+                        the architectures and test details of the two models are presented
+                        below.
+                    </p>
+
+                    <h5 class="mb-3" id="architectures">Architectures</h5>
+                    <p>The architecture of both models consists of a CNN embedding and
+                        results in a binary classifier following <code>swyft</code>. The
+                        embedding is common and is a variant of <a
+                            href="https://iopscience.iop.org/article/10.3847/1538-3881/abf4c6/meta">Olmschenk
+                            et al. 2021</a>. The detailed architecture for <code>EDIMS-1D</code> is
+                        presented in the following table.</p>
+                    <div class="table* mb-4">
+                        <table>
+                            <thead>
+                                <tr class="header">
+                                    <th style="text-align: center;"><strong>Layer</strong></th>
+                                    <th style="text-align: left;"><strong>Type</strong></th>
+                                    <th style="text-align: center;"><strong>Input Shape</strong></th>
+                                    <th style="text-align: center;"><strong>Output Shape</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="odd">
+                                    <td style="text-align: center;">Input</td>
+                                    <td style="text-align: left;">Tensor (unsqueeze)</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            250)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 1,
+                                            250)\)</span></td>
+                                </tr>
+                                <tr class="even">
+                                    <td style="text-align: center;">Conv Block 1</td>
+                                    <td style="text-align: left;">Conv1d LeakyReLU MaxPool1d</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 1,
+                                            250)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 16,
+                                            125)\)</span></td>
+                                </tr>
+                                <tr class="odd">
+                                    <td style="text-align: center;">Conv Block 2</td>
+                                    <td style="text-align: left;">Conv1d LeakyReLU SpatialDropout1D
+                                        MaxPool1d BatchNorm1d</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 16,
+                                            125)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 32,
+                                            62)\)</span></td>
+                                </tr>
+                                <tr class="even">
+                                    <td style="text-align: center;">Conv Block 3</td>
+                                    <td style="text-align: left;">Conv1d LeakyReLU SpatialDropout1D
+                                        MaxPool1d BatchNorm1d</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 32,
+                                            62)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 64,
+                                            31)\)</span></td>
+                                </tr>
+                                <tr class="odd">
+                                    <td style="text-align: center;">Conv Block 4</td>
+                                    <td style="text-align: left;">Conv1d LeakyReLU SpatialDropout1D
+                                        MaxPool1d BatchNorm1d</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 64,
+                                            31)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 128,
+                                            15)\)</span></td>
+                                </tr>
+                                <tr class="even">
+                                    <td style="text-align: center;">Conv Block 5</td>
+                                    <td style="text-align: left;">Conv1d LeakyReLU SpatialDropout1D
+                                        MaxPool1d BatchNorm1d</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 128,
+                                            15)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 256,
+                                            7)\)</span></td>
+                                </tr>
+                                <tr class="odd">
+                                    <td style="text-align: center;">Conv Block 6</td>
+                                    <td style="text-align: left;">Conv1d LeakyReLU Dropout MaxPool1d</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 256,
+                                            7)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 512,
+                                            3)\)</span></td>
+                                </tr>
+                                <tr class="even">
+                                    <td style="text-align: center;">Flatten</td>
+                                    <td style="text-align: left;">View</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 512,
+                                            3)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            1536)\)</span></td>
+                                </tr>
+                                <tr class="odd">
+                                    <td style="text-align: center;">Dense 1</td>
+                                    <td style="text-align: left;">Linear LeakyReLU</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            1536)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            512)\)</span></td>
+                                </tr>
+                                <tr class="even">
+                                    <td style="text-align: center;">Dense 2</td>
+                                    <td style="text-align: left;">Linear LeakyReLU Dropout BatchNorm1d</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            512)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            256)\)</span></td>
+                                </tr>
+                                <tr class="odd">
+                                    <td style="text-align: center;">Dense 3</td>
+                                    <td style="text-align: left;">Linear LeakyReLU Dropout BatchNorm1d</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            256)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            64)\)</span></td>
+                                </tr>
+                                <tr class="even">
+                                    <td style="text-align: center;">Dense 4</td>
+                                    <td style="text-align: left;">Linear LeakyReLU</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            64)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            16)\)</span></td>
+                                </tr>
+                                <tr class="odd">
+                                    <td style="text-align: center;">Log-Ratio</td>
+                                    <td style="text-align: left;">LogRatioEstimator_1dim</td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch}, 16),
+                                            (\text{batch},
+                                            1)\)</span></td>
+                                    <td style="text-align: center;"><span class="math inline">\((\text{batch},
+                                            1)\)</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h5 class="mb-3" id="training-details">Training Details</h5>
+                    <p>We generate 14.25 million LCs to train our models. There is no
+                        indicative metric to evaluate the training, as in the case of regression
+                        problems.</p>
+
+                    <h5 class="mb-3" id="testing-on-synthetic-data">Testing on Synthetic Data</h5>
+                    <p>We generate 5000 LCs to test <code>EDIMS-1D</code> and 500 to test
+                        <code>EDIMS-multiD</code>. Indicative test runs are shown in <a href="#test_data_EDIMS_1D"
+                            data-reference-type="ref" data-reference="test_data_EDIMS_1D">Fig. 1</a>. In
+                        SBI, a more appropriate way of visualizing the training is plotting the
+                        nominal credibility versus the empirical coverage (<a href="#coverage_EDIMS_1D"
+                            data-reference-type="ref" data-reference="coverage_EDIMS_1D">Fig. 2</a>). We see that the
+                        model is
+                        generally well calibrated (the curve is along the diagonal). It appears,
+                        however that there is a slight overconfidence at small nominal
+                        credibility, followed by a slight under-confidence.
+                    </p>
+                    <p id="test_data_EDIMS_1D">
+                        <embed src="{{ url_for('static', filename='figures/inference_trial_z000.pdf') }}" />
+                        <embed src="{{ url_for('static', filename='figures/inference_trial_z001.pdf') }}" />
+                        <embed src="{{ url_for('static', filename='figures/inference_trial_z002.pdf') }}" />
+                        <embed src="{{ url_for('static', filename='figures/inference_trial_z007.pdf') }}" />
+                    <figcaption aria-hidden="true">Fig. 1: Indicative Inference of <code>EDIMS-1D</code> on the
+                        synthetic testing set.
+                        The left panels show the marginal posteriors on the planet radius, with the gray regions
+                        indicating 1, 2 and 3 <span class="math inline">\(\sigma\)</span>
+                        highest density intervals (HDIs). The red vertical line denotes the true value.
+                    </figcaption>
+                    </p>
+                    <figure>
+                        <embed src="{{ url_for('static', filename='figures/coverageplots000_030.pdf') }}"
+                            id="coverage_EDIMS_1D" />
+                        <figcaption aria-hidden="true">Fig. 2: Coverage plot for <code>EDIMS-1D</code>
+                            on the synthetic testing set.</figcaption>
+                    </figure>
+
+                    <h5 class="mb-3" id="testing-on-tess-data">Testing on TESS Data</h5>
+                    <p>We gathered one transit-window TESS data for 565 confirmed TESS
+                        exoplanets. Some indicative inference runs are presented in <a href="#test_planets_EDIMS_1D"
+                            data-reference-type="ref" data-reference="test_planets_EDIMS_1D">Fig. 3</a>.</p>
+                    <p id="test_planets_EDIMS_1D">
+                        <embed src="{{ url_for('static', filename='figures/planet_332064670.pdf') }}" />
+                        <embed src="{{ url_for('static', filename='figures/planet_369455629.pdf') }}" />
+                        <embed src="{{ url_for('static', filename='figures/planet_77031414.pdf') }}" />
+                        <embed src="{{ url_for('static', filename='figures/planet_178284730.pdf') }}" />
+                    <figcaption aria-hidden="true">Fig. 3: Indicative Inference of <code>EDIMS-1D</code>
+                        on single transit data for TESS confirmed exoplanets: <code>332064670</code>,
+                        <code>369455629</code>, <code>77031414</code>, <code>178284730</code>.
+                    </figcaption>
+                    </p>
+
+                    <h5 class="mb-3" id="detection-criterion-and-testing">Detection Criterion and Testing</h5>
+                    <p>Until now, we presented only the inference part of our model's
+                        capabilities. It is evident that, in principle, this should be a
+                        function of planet's radius—there should exist a cutoff <span class="math inline">\(r_{\rm
+                            cutoff}\)</span>, under which the model
+                        cannot infer the planet properties, because the planet is so small that
+                        the transit is very well buried inside the noise. Informed by our test
+                        runs, we set <span class="math inline">\(r_{\rm cutoff} = 0.03 \
+                            r_*\)</span>. We can then define a probability of detection <span
+                            class="math display">\[p_{\rm det} = \int_0^{r_{\rm cutoff}} p(r_p|x) \
+                            dr_p = \int_0^{r_{\rm cutoff}} {\rm PDF}(r_p) \ dr_p = {\rm CDF}(r_{\rm
+                            cutoff}).\]</span> Our detection criterion will then be <span
+                            class="math display">\[\text{If} \ \ p_{\rm det} &gt; 0.5 \ \ \text{then
+                            we claim detection with probability} \ \ p_{\rm det}.\]</span> <span
+                            class="math display">\[\text{If} \ \ p_{\rm det} &lt; 0.5 \ \ \text{then
+                            we claim non-detection with probability} \ \ 1-p_{\rm det}.\]</span></p>
+                    <p>We tested the 565 confirmed TESS exoplanets based on this criterion.
+                        The results showed:</p>
+                    <ul>
+                        <li>
+                            <p>True detection of confirmed planets for arbitrary radius: 91.91%,
+                                or equivalently, 8.09% false negatives.</p>
+                        </li>
+                        <li>
+                            <p>True detection of confirmed planets for <span class="math inline">\(r_p &gt; r_{\rm
+                                    cutoff}\)</span> &gt; 95.77%, or
+                                equivalently, 4.23% false negatives.</p>
+                        </li>
                     </ul>
-                </div>
-                <hr class="my-4">
-                <div class="mb-4">
-                    <h5 class="mb-2">👨‍💻 Our Team</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2">• John Liodis</li>
-                        <li class="mb-2">• Stacy Topalidou</li>
-                        <li class="mb-2">• Mike Liodis</li>
-                        <li class="mb-2">• Herck Konsoulas</li>
-                        <li class="mb-2">• John Doe</li>
+                    <p>Furthermore, we tested 565 intervals of TESS data with no exoplanets
+                        (only noise) and the result was</p>
+                    <ul>
+                        <li>
+                            <p>Positive detection 30.60% of the times, or equivalently, 30.60%
+                                false positives.</p>
+                        </li>
                     </ul>
+                    <p>We stress that if we are interested merely on detection and not
+                        inference, we must find the value of <span class="math inline">\(r_{\rm
+                            cutoff}\)</span> that minimizes the false positives and negatives.</p>
                 </div>
-                <hr class="my-4">
-                <div class="mb-4">
-                    <h5 class="mb-2">🔗 Useful Links</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="https://www.spaceappschallenge.org/" target="_blank">NASA SpaceApps
-                                Challenge</a></li>
-                        <li class="mb-2"><a
-                                href="https://www.spaceappschallenge.org/2025/challenges/a-world-away-hunting-for-exoplanets-with-ai/"
-                                target="_blank">Our Challenge</a></li>
-                        <li class="mb-2"><a href="https://data.nasa.gov/" target="_blank">NASA Open Data Portal</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">🌌 Why SpaceApps?</h5>
-                <p class="mb-0">SpaceApps is a global hackathon that inspires collaboration, creativity, and
-                    problem-solving using NASA's open data. We're proud to be part of this amazing community!</p>
             </div>
         </div>
     </div>
