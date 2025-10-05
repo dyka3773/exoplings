@@ -45,7 +45,7 @@ class PlanetDetailExtractor:
             "z": z,
             "t0": localdf["pl_tranmid"].values[0] - 2457000.0,  # mid-transit time [BTJD]
             "per": localdf["pl_orbper"].values[0],  # orbital period [days]
-            "impact": np.nan,  # not in TOI table
+            "impact": None,  # not in TOI table
             "duration": localdf["pl_trandurh"].values[0] / 24.0,  # hours → days
             # "depth"   : localdf['pl_trandep'].values[0]               # fractional depth
         }
@@ -113,9 +113,9 @@ class PlanetDetailExtractor:
         #   lc_files = lk.search_lightcurve(f"KIC {kepid}", author="Kepler", cadence="short").download_all()
         #   print(f"Found!")
         # except:
-        print(f"Searching for any cadence...")
-        lc_files = lk.search_lightcurve(f"KIC {kepid}", author="Kepler").download_all()
-        print(f"Found!")
+        print("Searching for 2-min cadence...")
+        lc_files = lk.search_lightcurve(f"KIC {kepid}", author="Kepler", cadence="short").download_all()
+        print("Found!")
 
         # # --- DOWNLOAD TESS PDCSAP LIGHTCURVE FILES ---
         # print(f"Searching Kepler lightcurves for {planet_name} ...")

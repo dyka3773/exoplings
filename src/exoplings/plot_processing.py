@@ -43,19 +43,26 @@ def create_simple_lc_plot(df: pd.DataFrame) -> go.Figure:
         return fig
 
 
-def create_posterior_1D_plot(z_true, predictions) -> tuple[Figure, list[tuple[float, float]], float, float, bool]:
+def create_posterior_1D_plot(
+    z_true, predictions, sq=False, z_cutoff=0.03, c_cutoff=0.5
+) -> tuple[Figure, list[tuple[float, float]], float, float, bool]:
     # Extract posterior samples and density (and sort)
     z_values = predictions.params.T[0][0]
     z_values, indices = torch.sort(z_values)
     density = np.exp(predictions.logratios.T[0])[indices]
 
-    credible_intervals: list[tuple[float, float]] = compute_credible_intervals(z_values, density)
+    if sq:
+        z_values_sq = z_values**2
+    else:
+        z_values_sq = z_values
+
+    credible_intervals = compute_credible_intervals(z_values_sq, density)
 
     # Build figure
     fig_post = go.Figure()
 
     # Plot density curve
-    fig_post.add_trace(go.Scatter(x=z_values, y=density, mode="lines", line=dict(color="black"), name="Density"))
+    fig_post.add_trace(go.Scatter(x=z_values_sq, y=density, mode="lines", line=dict(color="black"), name="Density"))
 
     # Get y-limits
     y_min, y_max = 0, max(density) * 1.1
@@ -71,11 +78,11 @@ def create_posterior_1D_plot(z_true, predictions) -> tuple[Figure, list[tuple[fl
     tensor_credint = torch.tensor(credible_intervals)
     dlow = tensor_credint[0, 0] - tensor_credint[2, 0]
     dhigh = -tensor_credint[0, 1] + tensor_credint[2, 1]
-    zmax = z_values[np.argmax(density)]
+    zmax = z_values_sq[np.argmax(density)]
 
     # Layout adjustments
     fig_post.update_layout(
-        xaxis=dict(title="rₚ/r<sub>s</sub>", range=[0, float(zmax + 3 * dhigh)]),
+        xaxis=dict(title="rₚ [r<sub>s</sub>]", range=[0, float(zmax + 3 * dhigh)]),
         yaxis=dict(title="Probability density", range=[y_min, y_max]),
         template="simple_white",
     )
@@ -85,26 +92,32 @@ def create_posterior_1D_plot(z_true, predictions) -> tuple[Figure, list[tuple[fl
         fig_post.add_vline(x=z_true[0], line=dict(color="red"))
 
     # Add x-axis label
-    fig_post.update_xaxes(title="rₚ/r<sub>s</sub>")
+    fig_post.update_xaxes(title="rₚ [r<sub>s</sub>]")
 
     if z_true[0] is not None:
         fig_post.add_trace(
-            go.Scatter(x=[z_true[0], z_true[0]], y=[y_min, y_max], mode="lines", line=dict(color="red", dash="dash"), name="True value")
+            go.Scatter(
+                x=[z_true[0], z_true[0]],
+                y=[y_min, y_max],
+                mode="lines",
+                line=dict(color="red", dash="dash"),
+                name="True value",
+            )
         )
-
     fig_post.update_xaxes(range=[0, min(zmax + 3 * dhigh, 0.3)])
 
-    mode: float = z_values[torch.argmax(density)].item()
+    mode = z_values_sq[torch.argmax(density)].item()
 
     # compute certainty and is_exoplanet
     cdf = compute_cdf(density)
-    cs = CubicSpline(z_values, cdf)
-    z_cutoff = 0.05  # test and change that
+    cs = CubicSpline(z_values_sq, cdf)
+
+    if z_true[1]:
+        z_cutoff = 0.008  # for Kepler data
+
     certainty = cs(z_cutoff)
 
-    print(f"Certainty: {certainty}, Mode: {mode}, True z: {z_true[0]}")
-
-    if certainty >= 0.9:
+    if certainty >= c_cutoff:
         is_exoplanet = False
     else:
         is_exoplanet = True
@@ -113,12 +126,17 @@ def create_posterior_1D_plot(z_true, predictions) -> tuple[Figure, list[tuple[fl
     return fig_post, credible_intervals, mode, certainty, is_exoplanet
 
 
-def create_posterior_lc_plot(z_true, null_xs, credible_intervals, mode):
+def create_posterior_lc_plot(z_true, null_xs, credible_intervals, mode) -> Figure:
+    if z_true[1] is None:
+        impact = 0.2
+    else:
+        impact = z_true[1]
+
     # Compute min/max light curves
     min_zpred, max_zpred = credible_intervals[0]
-    min_lc = simulator.sample(conditions={"z": [min_zpred, z_true[1], z_true[2], z_true[3]]})["m"]
-    max_lc = simulator.sample(conditions={"z": [max_zpred, z_true[1], z_true[2], z_true[3]]})["m"]
-    mode_lc = simulator.sample(conditions={"z": [mode, z_true[1], z_true[2], z_true[3]]})["m"]
+    min_lc = simulator.sample(conditions={"z": [min_zpred, impact, z_true[2], z_true[3]]})["m"]
+    max_lc = simulator.sample(conditions={"z": [max_zpred, impact, z_true[2], z_true[3]]})["m"]
+    mode_lc = simulator.sample(conditions={"z": [mode, impact, z_true[2], z_true[3]]})["m"]
 
     # X-axis
     x_vals = np.arange(len(null_xs))
@@ -299,26 +317,30 @@ def plot_corner_plotly(lrs_coll, parnames, labels=None, truth=None, bins=100, sm
     return fig
 
 
-def plot_smart_multiD_infer(network, trainer) -> Figure:
-    z_true = [0.1, 1.0, 88.0, 0.0]
-
-    # Run simulation
-    mysampless = simulator.sample(conditions={"z": z_true})
-    null_xs = mysampless["x"]
-
+def plot_smart_multiD_infer(z_true, real_test, network, trainer) -> Figure:
     prior_samples = simulator.sample(targets=["x"], N=10000)
     prior_samples["z"] = prior_samples["z"].astype(np.float32)
 
-    predictions = trainer.infer(network, swyft.Sample(x=null_xs), prior_samples)
+    predictions = trainer.infer(network, swyft.Sample(x=real_test), prior_samples)
 
     # Build Plotly corner plot
-    fig_post = plot_corner_plotly(
-        predictions,
-        ["z[0]", "z[1]", "z[2]", "z[3]"],
-        labels=["rₚ/r<sub>s</sub>", "T [arbitrary units]", "i [deg]", "t<sub>0</sub> [arbitrary units]"],
-        truth={"z[0]": z_true[0], "z[1]": z_true[1], "z[2]": z_true[2], "z[3]": z_true[3]},
-        bins=200,
-        smooth=3,
-        figsize=(850, 600),
-    )
+    if z_true[0]:
+        fig_post = plot_corner_plotly(
+            predictions,
+            ["z[0]", "z[1]", "z[2]", "z[3]"],
+            labels=["rₚ [r<sub>s</sub>]", "b [r<sub>s</sub>]", "d [arbitrary units]", "t<sub>0</sub> [arbitrary units]"],
+            truth={"z[0]": z_true[0], "z[1]": z_true[1], "z[2]": z_true[2], "z[3]": z_true[3]},
+            bins=200,
+            smooth=3,
+            figsize=(850, 600),
+        )
+    else:
+        fig_post = plot_corner_plotly(
+            predictions,
+            ["z[0]", "z[1]", "z[2]", "z[3]"],
+            labels=["rₚ [r<sub>s</sub>]", "b [r<sub>s</sub>]", "d [arbitrary units]", "t<sub>0</sub> [arbitrary units]"],
+            bins=200,
+            smooth=3,
+            figsize=(850, 600),
+        )
     return fig_post

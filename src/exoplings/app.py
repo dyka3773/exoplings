@@ -45,7 +45,7 @@ multi_d_network.load_state_dict(
     )
 )
 
-simulator = Simulator(rand_inc=True, rand_t0=True, rand_per=True, t_len=250)
+simulator = Simulator(rand_b=True, rand_dur=True, rand_t0=True, t_len=250)
 trainer = SwyftTrainer(accelerator=DEVICE)
 
 # Register routes from routes.py

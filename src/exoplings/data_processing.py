@@ -24,6 +24,7 @@ def load_data(data) -> tuple[pd.DataFrame, dict]:
         return df, {
             "z": None,
             "duration": None,
+            "impact": None,
         }
 
     else:
@@ -37,6 +38,9 @@ def load_data(data) -> tuple[pd.DataFrame, dict]:
                 t0_btjd=planet_params["t0"],
                 window=planet_params["duration"],
             )
+
+            if df is None or df.empty:
+                raise ValueError(f"No TESS data found for identifier: {data}")
 
             return df, planet_params
         except (ValueError, TypeError):
@@ -52,4 +56,8 @@ def load_data(data) -> tuple[pd.DataFrame, dict]:
                 t0_btjd=planet_params["t0"],
                 window=planet_params["duration"],
             )
+
+            if df is None or df.empty:
+                raise ValueError(f"No Kepler data found for identifier: {data}")
+
             return df, planet_params
