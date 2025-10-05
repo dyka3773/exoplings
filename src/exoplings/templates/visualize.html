@@ -85,18 +85,30 @@
                     <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
                         📁 Upload New File
                     </a>
-                    <a href="{{ url_for('visualize', filename_or_id=['432549364', '308098254', '436875934', '259506033', '281541545'] | random) }}"
+                    <a href="{{ url_for('visualize', filename_or_id=['432549364', '38087018', '369455629', '398572544', '46020827', '411839167', '9443323', '77031414', '375942197', '311408969'] | random) }}"
                         class="btn btn-outline-secondary"
-                        id="pick-random-btn">
+                        id="pick-random-tess-btn">
                          🪐 Pick Random TESS Planet
                     </a>
                     <script>
-                        document.getElementById('pick-random-btn').addEventListener('click', function(e) {
+                        document.getElementById('pick-random-tess-btn').addEventListener('click', function(e) {
                             // Show loading modal
                             var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
                             modal.show();
                         });
-                </script>
+                    </script>
+                    <a href="{{ url_for('visualize', filename_or_id=['Kepler-466 c', 'Kepler-232 b', 'Kepler-232 c', 'Kepler-106 c', 'Kepler-105 c'] | random) }}"
+                        class="btn btn-outline-secondary"
+                        id="pick-random-kepler-btn">
+                         🪐 Pick Random Kepler Planet
+                    </a>
+                    <script>
+                        document.getElementById('pick-random-kepler-btn').addEventListener('click', function(e) {
+                            // Show loading modal
+                            var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                            modal.show();
+                        });
+                    </script>
                 </div>
             </div>
         </div>
@@ -128,7 +140,8 @@
                             <div class="card shadow-sm border-0 h-100">
                                 <div class="card-body py-3 d-flex align-items-center">
                                     <span class="me-2" style="font-size:1rem;">📄</span>
-                                    <a href="{{ url_for('visualize', filename_or_id=curve) }}" class="fw-bold text-primary text-decoration-none">
+                                    <a href="{{ url_for('visualize', filename_or_id=curve) }}" 
+                                    class="fw-bold text-primary text-decoration-none">
                                         {{ curve }}
                                     </a>
                                 </div>

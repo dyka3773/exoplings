@@ -17,22 +17,31 @@ class ExoplingDetector(swyft.SwyftModule):
     def __init__(self, input_length=250, dropout_rate=0.1):
         super().__init__()
 
-        # --- Convolutional blocks (similar to Olmschenk et al.) ---
+        # --- Convolutional blocks (like Olmschenk et al.) ---
         conv_blocks = []
         in_channels = 1
-        channels = [16, 32, 64]
+        channels = [16, 32, 64, 128, 256, 512]  # six conv blocks
+
         for i, out_channels in enumerate(channels):
             block = []
             block.append(nn.Conv1d(in_channels, out_channels, kernel_size=3, padding=1))
             block.append(nn.LeakyReLU())
-            if i < len(channels) - 1:  # spatial dropout for convs except last
+
+            # Dropout rules: no dropout in first block, spatial dropout for convs,
+            # except last conv before dense which uses standard dropout
+            if i > 0 and i < len(channels) - 1:
                 block.append(SpatialDropout1D(dropout_rate))
-            else:  # last conv before dense: standard dropout
+            elif i == len(channels) - 1:
                 block.append(nn.Dropout(dropout_rate))
-            if i < 2:  # first two conv blocks use pooling (like paper's first 6 convs)
+
+            # Pooling: only in first six conv blocks (paper's setup)
+            if i < 6:  # we have exactly six conv blocks
                 block.append(nn.MaxPool1d(2))
-            if i not in [0, len(channels) - 1]:  # no BN on first or last conv block
+
+            # BatchNorm: exclude first and last conv block
+            if i not in [0, len(channels) - 1]:
                 block.append(nn.BatchNorm1d(out_channels))
+
             conv_blocks.append(nn.Sequential(*block))
             in_channels = out_channels
 
@@ -45,7 +54,7 @@ class ExoplingDetector(swyft.SwyftModule):
         flatten_size = out.shape[1] * out.shape[2]
 
         # --- Dense blocks ---
-        self.fc1 = nn.Linear(flatten_size, 512)  # first dense block, no dropout/BN
+        self.fc1 = nn.Linear(flatten_size, 512)  # first dense block (no dropout/BN)
         self.fc2 = nn.Linear(512, 256)
         self.fc3 = nn.Linear(256, 64)
         self.fc4 = nn.Linear(64, 16)

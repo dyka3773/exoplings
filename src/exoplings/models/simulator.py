@@ -2,40 +2,45 @@ import batman
 import numpy as np
 import swyft
 
+DUR2PER = 1 / 0.0254921
+
 
 class Simulator(swyft.Simulator):
-    def __init__(self, rand_t0=False, rand_inc=False, rand_per=False, t_len=250):
+    def __init__(self, rand_b=False, rand_dur=False, rand_t0=False, t_len=250):
         super().__init__()
+        self.rand_b = rand_b
+        self.rand_dur = rand_dur
         self.rand_t0 = rand_t0
-        self.rand_inc = rand_inc
-        self.rand_per = rand_per
         self.t_len = t_len
         self.transform_samples = swyft.to_numpy32
 
     def sample_z(self):
+        # rp_sqrt = np.random.uniform(low=-0.15, high=0.5477225575051661)
+        # rp = np.heaviside( rp_sqrt, 1.) * rp_sqrt**2
+
         rp = np.random.uniform(low=0.0, high=0.5477225575051661) ** 2
         # rp = np.random.uniform(low=0.03162277660168379, high=0.5477225575051661)**2
         # rp = np.random.uniform(low=0.1, high=0.16)
 
-        if self.rand_per:
-            per = np.random.uniform(low=0.5, high=2)
+        if self.rand_dur:
+            dur = np.random.uniform(low=0.025, high=0.075)
         else:
-            per = 1.0
+            dur = 0.05
 
-        if self.rand_inc:
-            inc = np.random.uniform(low=86.0, high=90.0)
+        if self.rand_b:
+            b = np.random.uniform(low=0.0, high=1.0)
         else:
-            inc = 90.0
+            b = 0.0
 
         if self.rand_t0:
-            t0 = np.random.uniform(low=-0.02, high=0.02)
+            t0 = np.random.uniform(low=-0.01, high=0.01)
         else:
             t0 = 0.0
 
-        return np.array([rp, per, inc, t0])
+        return np.array([rp, b, dur, t0])
 
     def calc_m(self, z):
-        m = self.phys_sim(z[0], inc=z[2], per=z[1], t0=z[3], t_len=self.t_len)
+        m = self.phys_sim(rp=z[0], b=z[1], dur=z[2], t0=z[3], t_len=self.t_len)
         return m.astype(np.float32)
 
     def calc_x(self, m):
@@ -43,29 +48,6 @@ class Simulator(swyft.Simulator):
         # sigma = 0.00001
         result = self.get_noisy(m, sigma=sigma)
         return result.astype(np.float32)
-
-    def phys_sim(self, rp, inc=87.0, per=1.0, t0=0.0, t_len=250):
-        params = batman.TransitParams()  # object to store transit parameters
-        params.t0 = t0  # time of inferior conjunction
-        params.per = per  # orbital period
-        params.rp = rp  # planet radius (in units of stellar radii)
-        params.a = 15.0  # semi-major axis (in units of stellar radii)
-        params.inc = inc  # orbital inclination (in degrees)
-        params.ecc = 0.0  # eccentricity
-        params.w = 90.0  # longitude of periastron (in degrees)
-        params.limb_dark = "uniform"  # limb darkening model
-        params.u = []
-        # params.u = [0.5, 0.1, 0.1, -0.1]      #limb darkening coefficients [u1, u2, u3, u4]
-
-        t = np.linspace(-0.025, 0.025, t_len)  # times at which to calculate light curve
-        m = batman.TransitModel(params, t)  # initializes model
-
-        flux = m.light_curve(params)  # calculates light curve
-        return flux
-
-    def get_noisy(self, y, sigma=0.005):
-        y_noisy = y + np.random.normal(loc=0.0, scale=sigma, size=len(y))
-        return y_noisy
 
     def build(self, graph):  # the print statements are for illustration only
         print("--- Building graph!")
@@ -81,4 +63,26 @@ class Simulator(swyft.Simulator):
         print("--- x =", x)
         print("--- m =", m)
         print("--- z =", z)
-        # print("--- trust =", trust_scores)  # Debugging: print trust scores
+
+    def phys_sim(self, rp, b=0.0, dur=0.025, t0=0.0, t_len=250):
+        params = batman.TransitParams()  # object to store transit parameters
+        params.t0 = t0  # time of inferior conjunction
+        params.per = DUR2PER * dur  # orbital period
+        params.rp = rp  # planet radius (in units of stellar radii)
+        params.a = 15.0  # semi-major axis (in units of stellar radii)
+        params.inc = np.rad2deg(np.arccos(b / 15.0))  # orbital inclination (in degrees)
+        params.ecc = 0.0  # eccentricity
+        params.w = 90.0  # longitude of periastron (in degrees)
+        params.limb_dark = "uniform"  # limb darkening model
+        params.u = []
+        # params.u = [0.5, 0.1, 0.1, -0.1]        #limb darkening coefficients [u1, u2, u3, u4]
+
+        t = np.linspace(-0.05, 0.05, t_len)  # times at which to calculate light curve
+        m = batman.TransitModel(params, t)  # initializes model
+
+        flux = m.light_curve(params)  # calculates light curve
+        return flux
+
+    def get_noisy(self, y, sigma=0.005):
+        y_noisy = y + np.random.normal(loc=0.0, scale=sigma, size=len(y))
+        return y_noisy

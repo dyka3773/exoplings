@@ -1,12 +1,14 @@
 import json
 import os
 import time
+from pathlib import Path
 
 import plotly.utils
 import swyft
 import torch
 from flask import flash, redirect, render_template, request, url_for
 from plotly.graph_objs._figure import Figure
+from werkzeug.datastructures.file_storage import FileStorage
 from werkzeug.utils import secure_filename
 
 from .app import multi_d_network as network_multi
@@ -59,7 +61,7 @@ def register_routes(app):
             flash("No file selected")
             return redirect(url_for("index"))
 
-        file = request.files["file"]
+        file: FileStorage = request.files["file"]
 
         if allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -67,13 +69,14 @@ def register_routes(app):
             # add timestamp to filename to avoid overwriting
             filename = f"{int(time.time())}_{filename}"
 
-            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            filepath = Path(app.config["UPLOAD_FOLDER"]) / filename
+
             file.save(filepath)
 
             try:
-                df, _ = load_data(filepath)
+                df, _ = load_data(filename)
                 flash(f"File uploaded successfully! Found {len(df)} rows and {len(df.columns)} columns.")
-                return redirect(url_for("visualize", filename=filename))
+                return redirect(url_for("visualize", filename_or_id=filename))
 
             except Exception as e:
                 flash(f"Error processing file: {str(e)}")
@@ -112,11 +115,13 @@ def register_routes(app):
 
             processing_time = int((end_time - starting_time) * 1000)  # in milliseconds
 
-            conversion_factor = 1 / (0.022 * 24.0) * 3.2
+            delta_t = df["time_btjd"].values[-1] - df["time_btjd"].values[0]
+            conversion_factor = 0.1 / delta_t
+
             z_true = [
                 planet_params["z"],
-                planet_params["duration"] * conversion_factor if planet_params["duration"] else 100,
-                90.0,
+                planet_params["impact"],
+                planet_params["duration"] * conversion_factor if planet_params["duration"] else 100.0,
                 0.0,
             ]
 
@@ -126,7 +131,7 @@ def register_routes(app):
             if planet_params["z"]:
                 posterior_lc_fig: Figure = create_posterior_lc_plot(z_true, real_test, credible_intervals, mode)
 
-            posterior_corner_fig = plot_smart_multiD_infer(network_multi, trainer)
+            posterior_corner_fig = plot_smart_multiD_infer(z_true, real_test, network_multi, trainer)
 
             light_curve_plot_json = json.dumps(light_curve_fig, cls=plotly.utils.PlotlyJSONEncoder)
             posterior_plot_json = json.dumps(posterior_fig, cls=plotly.utils.PlotlyJSONEncoder)

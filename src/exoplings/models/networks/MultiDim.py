@@ -14,7 +14,7 @@ class SpatialDropout1D(nn.Dropout2d):
 
 
 class ExoplingInferrerUltra(swyft.SwyftModule):
-    def __init__(self, input_length=250, dropout_rate=0.1, feature_dim=250):
+    def __init__(self, input_length=250, dropout_rate=0.1, feature_dim=16):
         super().__init__()
 
         # --- Convolutional blocks (Olmschenk-inspired) ---
@@ -44,13 +44,15 @@ class ExoplingInferrerUltra(swyft.SwyftModule):
             out = self.conv_layers(dummy)
         flatten_size = out.shape[1] * out.shape[2]
 
-        # --- Dense projection to feature_dim (default 250) ---
-        self.fc1 = nn.Linear(flatten_size, 512)
+        # --- Dense blocks ---
+        self.fc1 = nn.Linear(flatten_size, 512)  # first dense block, no dropout/BN
         self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, feature_dim)
+        self.fc3 = nn.Linear(256, 64)
+        self.fc4 = nn.Linear(64, 16)
 
         self.dropout = nn.Dropout(dropout_rate)
         self.bn2 = nn.BatchNorm1d(256)
+        self.bn3 = nn.BatchNorm1d(64)
 
         # --- Log-ratio estimators ---
         marginals = ((0, 1, 2, 3),)
@@ -75,12 +77,15 @@ class ExoplingInferrerUltra(swyft.SwyftModule):
         features = self.conv_layers(x)
         features = features.view(features.size(0), -1)
 
-        # dense projection
+        # dense pipeline
         x = F.leaky_relu(self.fc1(features))
         x = F.leaky_relu(self.fc2(x))
         x = self.dropout(x)
         x = self.bn2(x)
-        embedding = F.leaky_relu(self.fc3(x))  # (batch, feature_dim)
+        x = F.leaky_relu(self.fc3(x))
+        x = self.dropout(x)
+        x = self.bn3(x)
+        embedding = F.leaky_relu(self.fc4(x))
 
         # log-ratio estimators
         logratios1 = self.logratios1(embedding, B["z"])
