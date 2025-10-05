@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v1.8.1](https://github.com/dyka3773/exoplings/releases/tag/v1.8.1) - 2025-10-05
+
+<small>[Compare with v1.8.0](https://github.com/dyka3773/exoplings/compare/v1.8.0...v1.8.1)</small>
+
+### Bug Fixes
+
+- correct merge conflict remnant ([3e3c084](https://github.com/dyka3773/exoplings/commit/3e3c08454f662c44675b99198c9fff7a46d56965) by Hercules Konsoulas).
+
 ## [v1.8.0](https://github.com/dyka3773/exoplings/releases/tag/v1.8.0) - 2025-10-05
 
 <small>[Compare with v1.7.0](https://github.com/dyka3773/exoplings/compare/v1.7.0...v1.8.0)</small>
@@ -102,3 +110,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Features
 
 - move routing in a separate module and add an "about us" page ([7382e87](https://github.com/dyka3773/exoplings/commit/7382e87d29a78fb3fcff55a23e3559a613abbbbb) by Hercules Konsoulas).
+
