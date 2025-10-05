@@ -112,11 +112,13 @@ def register_routes(app):
 
             processing_time = int((end_time - starting_time) * 1000)  # in milliseconds
 
-            conversion_factor = 1 / (0.022 * 24.0) * 3.2
+            delta_t = df["time_btjd"].values[-1] - df["time_btjd"].values[0]
+            conversion_factor = 0.1 / delta_t
+
             z_true = [
                 planet_params["z"],
-                planet_params["duration"] * conversion_factor if planet_params["duration"] else 100,
-                90.0,
+                planet_params["impact"],
+                planet_params["duration"] * conversion_factor,
                 0.0,
             ]
 
@@ -126,7 +128,7 @@ def register_routes(app):
             if planet_params["z"]:
                 posterior_lc_fig: Figure = create_posterior_lc_plot(z_true, real_test, credible_intervals, mode)
 
-            posterior_corner_fig = plot_smart_multiD_infer(network_multi, trainer)
+            posterior_corner_fig = plot_smart_multiD_infer(z_true, real_test, network_multi, trainer)
 
             light_curve_plot_json = json.dumps(light_curve_fig, cls=plotly.utils.PlotlyJSONEncoder)
             posterior_plot_json = json.dumps(posterior_fig, cls=plotly.utils.PlotlyJSONEncoder)

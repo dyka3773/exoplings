@@ -39,21 +39,35 @@
                     });
                 </script>
                 
-                <div class="d-grid mt-3">
+                <div class="d-grid mt-3 gap-2">
                     <!-- Button to pick random TESS planet -->
-                    <a href="{{ url_for('visualize', filename_or_id=['432549364', '308098254', '436875934', '259506033', '281541545'] | random) }}"
+                    <a href="{{ url_for('visualize', filename_or_id=['432549364', '38087018', '369455629', '398572544', '46020827', '411839167', '9443323', '77031414', '375942197', '311408969'] | random) }}"
                         class="btn btn-outline-secondary btn-lg"
-                        id="pick-random-btn">
+                        id="pick-random-tess-btn">
                          🪐 Pick Random TESS Planet
                     </a>
+                    <script>
+                        document.getElementById('pick-random-tess-btn').addEventListener('click', function(e) {
+                            // Show loading modal
+                            var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                            modal.show();
+                        });
+                    </script>
+                    <!-- Button to pick random Kepler planet -->
+                    <a href="{{ url_for('visualize', filename_or_id=['Kepler-466 c', 'Kepler-232 b', 'Kepler-232 c', 'Kepler-106 c', 'Kepler-105 c'] | random) }}"
+                        class="btn btn-outline-secondary btn-lg"
+                        id="pick-random-kepler-btn">
+                         🪐 Pick Random Kepler Planet
+                    </a>
+                    <script>
+                        document.getElementById('pick-random-kepler-btn').addEventListener('click', function(e) {
+                            // Show loading modal
+                            var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                            modal.show();
+                        });
+                    </script>
                 </div>
-                <script>
-                    document.getElementById('pick-random-btn').addEventListener('click', function(e) {
-                        // Show loading modal
-                        var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
-                        modal.show();
-                    });
-                </script>
+                
                 
                 <hr class="my-5">
                 
