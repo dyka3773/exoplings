@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v1.7.0](https://github.com/dyka3773/exoplings/releases/tag/v1.7.0) - 2025-10-05
+
+<small>[Compare with v1.6.0](https://github.com/dyka3773/exoplings/compare/v1.6.0...v1.7.0)</small>
+
+### Features
+
+- add new models, add new buttons for random kepler planets, remove truth values in corner plots when not knowing truth ([06a35a0](https://github.com/dyka3773/exoplings/commit/06a35a07da868b937e0226c2aa47728909d34483) by Hercules Konsoulas).
+
+### Bug Fixes
+
+- resolve the issue with uploading a file, resolve the issue with CSV data viz error, add another CSV with better looking values ([2c33cc4](https://github.com/dyka3773/exoplings/commit/2c33cc470173117fbaad9e601d2fef481fc26070) by Hercules Konsoulas).
+
 ## [v1.6.0](https://github.com/dyka3773/exoplings/releases/tag/v1.6.0) - 2025-10-04
 
 <small>[Compare with v1.5.0](https://github.com/dyka3773/exoplings/compare/v1.5.0...v1.6.0)</small>
@@ -76,3 +88,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Features
 
 - move routing in a separate module and add an "about us" page ([7382e87](https://github.com/dyka3773/exoplings/commit/7382e87d29a78fb3fcff55a23e3559a613abbbbb) by Hercules Konsoulas).
+
