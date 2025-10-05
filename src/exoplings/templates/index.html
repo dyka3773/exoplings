@@ -67,6 +67,13 @@
                         });
                     </script>
                 </div>
+                <script>
+                    document.getElementById('pick-random-btn').addEventListener('click', function(e) {
+                        // Show loading modal
+                        var modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                        modal.show();
+                    });
+                </script>
                 
                 
                 <hr class="my-5">
