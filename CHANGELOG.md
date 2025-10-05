@@ -110,4 +110,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Features
 
 - move routing in a separate module and add an "about us" page ([7382e87](https://github.com/dyka3773/exoplings/commit/7382e87d29a78fb3fcff55a23e3559a613abbbbb) by Hercules Konsoulas).
-
