@@ -1,6 +1,6 @@
 # Exoplings
 
-- [ ] csv
+- [x] csv
 - [x] loading screen
 - [X] new models change
 - [ ] model info page
