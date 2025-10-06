@@ -38,7 +38,7 @@ bokeh==3.8.0
     # via lightkurve
 botocore==1.40.18
     # via aiobotocore
-certifi==2025.8.3
+certifi==2025.10.5
     # via requests
 charset-normalizer==3.4.3
     # via requests
