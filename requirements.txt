@@ -22,7 +22,7 @@ astropy-iers-data==0.2025.9.29.0.35.48
     # via astropy
 astroquery==0.4.11
     # via lightkurve
-attrs==25.3.0
+attrs==25.4.0
     # via aiohttp
 backports-tarfile==1.2.0
     # via jaraco-context
