@@ -68,7 +68,7 @@ flask==3.1.2
     # via exoplings (pyproject.toml)
 fonttools==4.60.1
     # via matplotlib
-frozenlist==1.7.0
+frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
