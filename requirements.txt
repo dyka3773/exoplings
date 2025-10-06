@@ -18,7 +18,7 @@ astropy==7.1.0
     #   astroquery
     #   lightkurve
     #   pyvo
-astropy-iers-data==0.2025.9.29.0.35.48
+astropy-iers-data==0.2025.10.6.0.35.25
     # via astropy
 astroquery==0.4.11
     # via lightkurve
