@@ -136,7 +136,7 @@ multidict==6.6.4
     #   aiobotocore
     #   aiohttp
     #   yarl
-narwhals==2.6.0
+narwhals==2.8.0
     # via
     #   bokeh
     #   plotly
